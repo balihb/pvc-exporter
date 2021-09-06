@@ -1,2 +1,5 @@
 config env vars:
 
+* APP_HTTP_SERVER_PORT
+* APP_LOG_LEVEL
+* APP_LOG_FORMAT
