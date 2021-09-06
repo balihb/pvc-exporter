@@ -89,6 +89,7 @@ def main():
         old_pool_keys = cleanup_pool(
             pool=pool,
             old_pool_keys=old_pool_keys,
+            new_pool_keys=new_pool_keys
         )
 
         sleep(15)
