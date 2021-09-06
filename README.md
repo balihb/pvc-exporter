@@ -1,6 +1,7 @@
 # pvc-exporter
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/pvc-exporter)](https://artifacthub.io/packages/search?repo=pvc-exporter)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=balihb_pvc-exporter&metric=alert_status)](https://sonarcloud.io/dashboard?id=balihb_pvc-exporter)
 This item provides 2 metrics,one for monitoring mounted pvc usage percent named pvc_usage, and one for provides the mapping between pod and pvc named pvc_mapping.
 
 # Note
