@@ -1,0 +1,135 @@
+name: release
+on:
+  push:
+    branches:
+      - master
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v2
+      - uses: pre-commit/action@v2.0.3
+      - uses: gittools/actions/gitversion/setup@v0.9.10
+        with:
+          versionSpec: 5.7.0
+      - id: gitversion
+        uses: gittools/actions/gitversion/execute@v0.9.10
+      - name: VERSION file block-pvc-scanner
+        run: |
+          echo "${{ steps.gitversion.outputs.semVer }}" > block-pvc-scanner/src/block-pvc-scanner/VERSION
+      - name: VERSION file pod-pvc-mapping
+        run: |
+          echo "${{ steps.gitversion.outputs.semVer }}" > pod-pvc-mapping/src/pod-pvc-mapping/VERSION
+      - name: build deps
+        run: |
+          python3 -m pip install --upgrade build
+      - name: build Python package block-pvc-scanner
+        run: |
+          cd block-pvc-scanner
+          python3 -m build --sdist
+      - name: build Python package pod-pvc-mapping
+        run: |
+          cd pod-pvc-mapping
+          python3 -m build --sdist
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Docker build and push block-pvc-scanner
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          context: ./block-pvc-scanner
+          file: ./block-pvc-scanner/Dockerfile
+          push: true
+          builder: ${{ steps.buildx.outputs.name }}
+          tags: |
+            ${{ secrets.DOCKER_HUB_USERNAME }}/block-pvc-scanner:${{ steps.gitversion.outputs.semVer }}
+            ${{ secrets.DOCKER_HUB_USERNAME }}/block-pvc-scanner:latest
+            ghcr.io/${{ github.repository_owner }}/block-pvc-scanner:${{ steps.gitversion.outputs.semVer }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+      - name: Docker build and push pod-pvc-mapping
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          context: ./pod-pvc-mapping
+          file: ./pod-pvc-mapping/Dockerfile
+          push: true
+          builder: ${{ steps.buildx.outputs.name }}
+          tags: |
+            ${{ secrets.DOCKER_HUB_USERNAME }}/pod-pvc-mapping:${{ steps.gitversion.outputs.semVer }}
+            ${{ secrets.DOCKER_HUB_USERNAME }}/pod-pvc-mapping:latest
+            ghcr.io/${{ github.repository_owner }}/pod-pvc-mapping:${{ steps.gitversion.outputs.semVer }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+      - # Temp fix
+        # https://github.com/docker/build-push-action/issues/252
+        # https://github.com/moby/buildkit/issues/1896
+        name: Move Docker cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+      - name: Update chart version in the related HelmChart Charts.yaml
+        uses: fjogeleit/yaml-update-action@master
+        with:
+          valueFile: 'charts/pvc-exporter/Chart.yaml'
+          propertyPath: 'version'
+          value: ${{ steps.gitversion.outputs.semVer }}
+          createPR: false
+          commitChange: false
+          updateFile: true
+          message: 'Update chart version to ${{ steps.image.outputs.version }}'
+      - name: Update appVersion in the related HelmChart Charts.yaml
+        uses: fjogeleit/yaml-update-action@master
+        with:
+          valueFile: 'charts/pvc-exporter/Chart.yaml'
+          propertyPath: 'appVersion'
+          value: "${{ steps.gitversion.outputs.semVer }}"
+          createPR: false
+          commitChange: false
+          updateFile: true
+          message: 'Update appVersion to ${{ steps.image.outputs.version }}'
+
+      - name: Configure Git
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+      - uses: azure/setup-helm@v1
+        with:
+          version: v3.6.3
+
+      - uses: helm/chart-releaser-action@v1.2.1
+        env:
+          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: "block-pvc-scanner/dist/*.tar.gz,pod-pvc-mapping/dist/*.tar.gz"
+          tag: ${{ steps.gitversion.outputs.semVer }}
+          commit: ${{ github.ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}

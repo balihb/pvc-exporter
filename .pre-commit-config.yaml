@@ -1,0 +1,32 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.0.1
+    hooks:
+      - id: trailing-whitespace
+      - id: check-merge-conflict
+      - id: mixed-line-ending
+        args: [ --fix=no ]
+      - id: check-yaml
+        args: [ --allow-multiple-documents ]
+        exclude: |
+          (?x)^(
+              charts/pvc-exporter/templates/.+.yaml
+          )$
+      - id: check-json
+      - id: check-xml
+      - id: check-toml
+  - repo: https://github.com/pycqa/flake8
+    rev: '3.9.2'
+    hooks:
+      - id: flake8
+  - repo: https://github.com/editorconfig-checker/editorconfig-checker.python
+    rev: '2.3.54'
+    hooks:
+      - id: editorconfig-checker
+        alias: ec
+        exclude: |
+          (?x)^(
+              LICENSE|
+              COPYING|
+              charts/pvc-exporter/templates/.+.yaml
+          )$
