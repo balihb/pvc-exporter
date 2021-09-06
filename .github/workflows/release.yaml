@@ -19,6 +19,16 @@ jobs:
         uses: gittools/actions/gitversion/execute@v0.9.10
         with:
           useConfigFile: true
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        with:
+          args: >
+            -Dsonar.projectVersion=${{ steps.gitversion.outputs.semVer }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
       - name: VERSION file block-pvc-scanner
         run: |
           echo "${{ steps.gitversion.outputs.semVer }}" > block_pvc_scanner/src/block_pvc_scanner/VERSION
