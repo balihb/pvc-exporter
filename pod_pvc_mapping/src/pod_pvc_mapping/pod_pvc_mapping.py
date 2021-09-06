@@ -28,14 +28,53 @@ def get_items(obj):
     return items
 
 
+def process_pods(pvcs, pods, pool: dict, new_pool_keys: set[str]):
+    for pod in pods:
+        for vc in pod['spec']['volumes']:
+            if vc['persistent_volume_claim']:
+                process_pvc(
+                    pvc=vc['persistent_volume_claim']['claim_name'],
+                    pvcs=pvcs,
+                    pod_name=pod['metadata']['name'],
+                    pool=pool,
+                    new_pool_keys=new_pool_keys
+                )
+
+
+def process_pvc(
+    pvc: str, pvcs, pod_name: str,
+    pool: dict, new_pool_keys: set[str]
+):
+    for v in pvcs:
+        if v['metadata']['name'] == pvc:
+            vol = v['spec']['volume_name']
+            logger.info("PVC: %s, VOLUME: %s, POD: %s" % (pvc, vol, pod_name))
+            new_pool_keys.add(pvc)
+            if pvc in pool.keys():
+                gauge.remove(pvc, pool[pvc][0], pool[pvc][1])
+                gauge.labels(pvc, vol, pod_name)
+                pool[pvc] = [vol, pod_name]
+            else:
+                gauge.labels(pvc, vol, pod_name)
+                pool[pvc] = [vol, pod_name]
+
+
+def cleanup_pool(pool: dict, old_pool_keys: set[str], new_pool_keys: set[str]):
+    for pvc in old_pool_keys - new_pool_keys:
+        gauge.remove(pvc, pool[pvc][0], pool[pvc][1])
+        pool.pop(pvc)
+    return pool.keys()
+
+
 def main():
     pool = {}
 
-    old_pool = set()
+    old_pool_keys = set()
 
     start_http_server(os.getenv('APP_HTTP_SERVER_PORT', 8848))
 
     while 1:
+        new_pool_keys = set()
         config.load_incluster_config()
         k8s_api_obj = client.CoreV1Api()
         nss = get_items(k8s_api_obj.list_namespace())
@@ -45,28 +84,11 @@ def main():
             pvcs = get_items(
                 k8s_api_obj.list_namespaced_persistent_volume_claim(ns)
             )
-            for p in pods:
-                for vc in p['spec']['volumes']:
-                    if vc['persistent_volume_claim']:
-                        pvc = vc['persistent_volume_claim']['claim_name']
-                        for v in pvcs:
-                            if v['metadata']['name'] == pvc:
-                                vol = v['spec']['volume_name']
-                        pod = p['metadata']['name']
-                        logger.info("PVC: %s, VOLUME: %s, POD: %s" %
-                                    (pvc, vol, pod)
-                                    )
-                        if pvc in pool.keys():
-                            gauge.remove(pvc, pool[pvc][0], pool[pvc][1])
-                            gauge.labels(pvc, vol, pod)
-                            pool[pvc] = [vol, pod]
-                        else:
-                            gauge.labels(pvc, vol, pod)
-                            pool[pvc] = [vol, pod]
+            process_pods(pods, pool, pvcs, new_pool_keys)
 
-        for pvc in old_pool - pool.keys():
-            gauge.remove(pvc, pool[pvc][0], pool[pvc][1])
-            pool.pop(pvc)
-        old_pool = pool.keys()
+        old_pool_keys = cleanup_pool(
+            pool=pool,
+            old_pool_keys=old_pool_keys,
+        )
 
         sleep(15)
