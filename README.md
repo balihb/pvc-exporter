@@ -18,7 +18,7 @@ The following storage provisioners has been tested...
 # Usage
 
 ```shell
-helm repo add pvc-exporter https://kais271.github.io/pvc-exporter/helm3/charts/
+helm repo add pvc-exporter https://balihb.github.io/pvc-exporter/
 helm install my-pvc-exporter pvc-exporter/pvc-exporter --version xxx
 ```
 
