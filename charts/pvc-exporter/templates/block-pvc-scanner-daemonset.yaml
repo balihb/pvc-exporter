@@ -38,16 +38,22 @@ spec:
         - containerPort: {{.Values.BlockPvcScanner.containerPort}}
           name: metrics
           protocol: TCP
+        {{- with .Values.BlockPvcScanner.resources }}
         resources:
-          {{- toYaml .Values.BlockPvcScanner.resources | nindent 12 }}
+          {{- toYaml . | nindent 12 }}
+        {{- end }}
         volumeMounts:
         - name: root-path
           mountPath: /host
           readOnly: true
+        {{- with .Values.BlockPvcScanner.livenessProbe }}
         livenessProbe:
-        {{- toYaml .Values.BlockPvcScanner.livenessProbe | nindent 12 }}
+        {{- toYaml . | nindent 12 }}
+        {{- end }}
+        {{- with .Values.BlockPvcScanner.securityContext }}
         securityContext:
-        {{- toYaml .Values.BlockPvcScanner.securityContext | nindent 12 }}
+        {{- toYaml . | nindent 12 }}
+        {{- end }}
         {{- with .Values.BlockPvcScanner.env }}
         env:
       {{- toYaml . | nindent 10 }}

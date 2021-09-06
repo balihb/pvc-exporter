@@ -45,10 +45,16 @@ spec:
         env:
       {{- toYaml . | nindent 10 }}
       {{- end }}
+        {{- with .Values.PodPvcMapping.resources }}
         resources:
-        {{- toYaml .Values.PodPvcMapping.resources | nindent 10 }}
+        {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with .Values.PodPvcMapping.livenessProbe }}
         livenessProbe:
-        {{- toYaml .Values.PodPvcMapping.livenessProbe | nindent 10 }}
+        {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with .Values.PodPvcMapping.securityContext }}
         securityContext:
-      {{- toYaml .Values.PodPvcMapping.securityContext | nindent 10 }}
+      {{- toYaml . | nindent 10 }}
+      {{- end }}
       serviceAccountName: {{ $fullName }}-sa

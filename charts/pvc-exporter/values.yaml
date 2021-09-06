@@ -40,6 +40,27 @@ PodPvcMapping:
     - key: node-role.kubernetes.io/master
       effect: NoSchedule
 
+  resources:
+    limits:
+      memory: 200Mi
+    requests:
+      cpu: 100m
+      memory: 200Mi
+
+  livenessProbe:
+    httpGet:
+      path: /
+      port: metrics
+    timeoutSeconds: 3
+    failureThreshold: 3
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    successThreshold: 1
+
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+
 BlockPvcScanner:
   image:
     repository: balihb/block-pvc-scanner
