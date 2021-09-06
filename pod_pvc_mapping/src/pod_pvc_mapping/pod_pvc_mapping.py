@@ -71,7 +71,7 @@ def main():
 
     old_pool_keys = set()
 
-    start_http_server(os.getenv('APP_HTTP_SERVER_PORT', 8848))
+    start_http_server(os.getenv('APP_HTTP_SERVER_PORT', 8849))
 
     while 1:
         new_pool_keys = set()
