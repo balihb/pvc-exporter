@@ -2,6 +2,15 @@ apiVersion: v1
 entries:
   pvc-exporter:
   - apiVersion: v2
+    appVersion: 0.1.10
+    created: "2021-09-06T13:10:29.590189474Z"
+    digest: b7bc867010ecadd10401140b4be8b694cbc2027358a7c16ec442781475a3ce2c
+    name: pvc-exporter
+    type: application
+    urls:
+    - https://github.com/balihb/pvc-exporter/releases/download/pvc-exporter-0.1.10/pvc-exporter-0.1.10.tgz
+    version: 0.1.10
+  - apiVersion: v2
     appVersion: 0.1.9
     created: "2021-09-06T12:56:12.844531482Z"
     digest: 50024f44ec2440586817f72842f5de1fa38e9955baea001185be6182587f19be
@@ -73,4 +82,4 @@ entries:
     urls:
     - https://github.com/balihb/pvc-exporter/releases/download/pvc-exporter-0.1.3-omaster.1/pvc-exporter-0.1.3-omaster.1.tgz
     version: 0.1.3-omaster.1
-generated: "2021-09-06T12:56:12.844625883Z"
+generated: "2021-09-06T13:10:29.590235474Z"
