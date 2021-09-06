@@ -19,20 +19,20 @@ jobs:
         uses: gittools/actions/gitversion/execute@v0.9.10
       - name: VERSION file block-pvc-scanner
         run: |
-          echo "${{ steps.gitversion.outputs.semVer }}" > block-pvc-scanner/src/block-pvc-scanner/VERSION
+          echo "${{ steps.gitversion.outputs.semVer }}" > block_pvc_scanner/src/block_pvc_scanner/VERSION
       - name: VERSION file pod-pvc-mapping
         run: |
-          echo "${{ steps.gitversion.outputs.semVer }}" > pod-pvc-mapping/src/pod-pvc-mapping/VERSION
+          echo "${{ steps.gitversion.outputs.semVer }}" > pod_pvc_mapping/src/pod_pvc_mapping/VERSION
       - name: build deps
         run: |
           python3 -m pip install --upgrade build
       - name: build Python package block-pvc-scanner
         run: |
-          cd block-pvc-scanner
+          cd block_pvc_scanner
           python3 -m build --sdist
       - name: build Python package pod-pvc-mapping
         run: |
-          cd pod-pvc-mapping
+          cd pod_pvc_mapping
           python3 -m build --sdist
 
       - name: Login to Docker Hub
@@ -59,11 +59,11 @@ jobs:
             ${{ runner.os }}-buildx-
 
       - name: Docker build and push block-pvc-scanner
-        id: docker_build
+        id: docker_build_block_pvc_scanner
         uses: docker/build-push-action@v2
         with:
-          context: ./block-pvc-scanner
-          file: ./block-pvc-scanner/Dockerfile
+          context: ./block_pvc_scanner
+          file: ./block_pvc_scanner/Dockerfile
           push: true
           builder: ${{ steps.buildx.outputs.name }}
           tags: |
@@ -73,11 +73,11 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
       - name: Docker build and push pod-pvc-mapping
-        id: docker_build
+        id: docker_build_pod_pvc_mapping
         uses: docker/build-push-action@v2
         with:
-          context: ./pod-pvc-mapping
-          file: ./pod-pvc-mapping/Dockerfile
+          context: ./pod_pvc_mapping
+          file: ./pod_pvc_mapping/Dockerfile
           push: true
           builder: ${{ steps.buildx.outputs.name }}
           tags: |
@@ -129,7 +129,7 @@ jobs:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
       - uses: ncipollo/release-action@v1
         with:
-          artifacts: "block-pvc-scanner/dist/*.tar.gz,pod-pvc-mapping/dist/*.tar.gz"
+          artifacts: "block_pvc_scanner/dist/*.tar.gz,pod_pvc_mapping/dist/*.tar.gz"
           tag: ${{ steps.gitversion.outputs.semVer }}
           commit: ${{ github.ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
