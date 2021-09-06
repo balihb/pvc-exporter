@@ -44,6 +44,10 @@ spec:
         - name: root-path
           mountPath: /host
           readOnly: true
+        livenessProbe:
+        {{- toYaml .Values.BlockPvcScanner.livenessProbe | nindent 12 }}
+        securityContext:
+        {{- toYaml .Values.BlockPvcScanner.securityContext | nindent 12 }}
         {{- with .Values.BlockPvcScanner.env }}
         env:
       {{- toYaml . | nindent 10 }}

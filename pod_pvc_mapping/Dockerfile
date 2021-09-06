@@ -34,4 +34,6 @@ ENV VIRTUAL_ENV=/opt/venv
 COPY --from=builder /opt/venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
+ENV PYTHONUNBUFFERED=1
+
 CMD 'pod-pvc-mapping'

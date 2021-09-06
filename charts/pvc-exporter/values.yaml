@@ -21,24 +21,24 @@ PodPvcMapping:
     ## If PodPvcMapping.service.headless=true, then ignore type
     type: NodePort
     port: 8849
-    labels: {}
-    annotations: {}
+    labels: { }
+    annotations: { }
       # prometheus.io/path: "/"
       # prometheus.io/port: "8849"
-      # prometheus.io/scrape: "true"
+    # prometheus.io/scrape: "true"
 
-  env: {}
-      # - name: APP_HTTP_SERVER_PORT
-      #   value: "8849"
-      # - name: APP_LOG_FORMAT
-      #   value: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-      # - name: APP_LOG_LEVEL
-      #   value: "DEBUG"
+  env: { }
+    # - name: APP_HTTP_SERVER_PORT
+    #   value: "8849"
+    # - name: APP_LOG_FORMAT
+    #   value: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    # - name: APP_LOG_LEVEL
+  #   value: "DEBUG"
 
-  nodeSelector: {}
+  nodeSelector: { }
   tolerations:
-  - key: node-role.kubernetes.io/master
-    effect: NoSchedule
+    - key: node-role.kubernetes.io/master
+      effect: NoSchedule
 
 BlockPvcScanner:
   image:
@@ -54,24 +54,24 @@ BlockPvcScanner:
     ## If BlockPvcScanner.service.headless=true, then ignore type
     type: NodePort
     port: 8848
-    labels: {}
-    annotations: {}
+    labels: { }
+    annotations: { }
       # prometheus.io/path: "/"
       # prometheus.io/port: "8848"
-      # prometheus.io/scrape: "true"
+    # prometheus.io/scrape: "true"
 
-  env: {}
+  env: { }
     # - name: APP_HTTP_SERVER_PORT
     #   value: "8849"
     # - name: APP_LOG_FORMAT
     #   value: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     # - name: APP_LOG_LEVEL
-    #   value: "DEBUG"
+  #   value: "DEBUG"
 
-  nodeSelector: {}
+  nodeSelector: { }
   tolerations:
-  - key: node-role.kubernetes.io/master
-    effect: NoSchedule
+    - key: node-role.kubernetes.io/master
+      effect: NoSchedule
 
   resources:
     limits:
@@ -79,6 +79,20 @@ BlockPvcScanner:
     requests:
       cpu: 100m
       memory: 200Mi
+
+  livenessProbe:
+    httpGet:
+      path: /
+      port: metrics
+    timeoutSeconds: 3
+    failureThreshold: 3
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    successThreshold: 1
+
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
 
 serviceMonitor:
   enabled: true
