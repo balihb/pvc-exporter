@@ -1,2 +1,3 @@
 *       text    eol=lf
+*.PNG       binary
 .gitattributes linguist-language=gitattributes
