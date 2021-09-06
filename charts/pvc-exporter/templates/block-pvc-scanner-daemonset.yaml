@@ -31,7 +31,7 @@ spec:
       containers:
       - name: block-pvc-scanner
         {{- with .Values.BlockPvcScanner.image }}
-        image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag }}{{ end }}"
+        image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag | default $.Chart.AppVersion }}{{ end }}"
         imagePullPolicy: {{ .pullPolicy }}
         {{- end }}
         ports:

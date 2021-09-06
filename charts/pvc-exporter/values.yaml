@@ -8,7 +8,7 @@ createNamespace: true
 PodPvcMapping:
   image:
     repository: balihb/pod-pvc-mapping
-    tag: latest
+    tag: ""
     pullPolicy: IfNotPresent
     pullSecrets:
       - name: regsecret
@@ -25,7 +25,7 @@ PodPvcMapping:
     annotations: { }
       # prometheus.io/path: "/"
       # prometheus.io/port: "8849"
-    # prometheus.io/scrape: "true"
+      # prometheus.io/scrape: "true"
 
   env: { }
     # - name: APP_HTTP_SERVER_PORT
@@ -33,7 +33,7 @@ PodPvcMapping:
     # - name: APP_LOG_FORMAT
     #   value: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     # - name: APP_LOG_LEVEL
-  #   value: "DEBUG"
+    #   value: "DEBUG"
 
   nodeSelector: { }
   tolerations:
@@ -43,7 +43,7 @@ PodPvcMapping:
 BlockPvcScanner:
   image:
     repository: balihb/block-pvc-scanner
-    tag: latest
+    tag: ""
     pullPolicy: IfNotPresent
     pullSecrets:
       - name: regsecret
@@ -58,7 +58,7 @@ BlockPvcScanner:
     annotations: { }
       # prometheus.io/path: "/"
       # prometheus.io/port: "8848"
-    # prometheus.io/scrape: "true"
+      # prometheus.io/scrape: "true"
 
   env: { }
     # - name: APP_HTTP_SERVER_PORT
@@ -66,7 +66,7 @@ BlockPvcScanner:
     # - name: APP_LOG_FORMAT
     #   value: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     # - name: APP_LOG_LEVEL
-  #   value: "DEBUG"
+    #   value: "DEBUG"
 
   nodeSelector: { }
   tolerations:
