@@ -1,0 +1,4 @@
+branches:
+  main:
+    regex: ^omaster$
+    is-release-branch: true

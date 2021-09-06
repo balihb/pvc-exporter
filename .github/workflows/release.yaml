@@ -17,6 +17,8 @@ jobs:
           versionSpec: 5.7.0
       - id: gitversion
         uses: gittools/actions/gitversion/execute@v0.9.10
+        with:
+          useConfigFile: true
       - name: VERSION file block-pvc-scanner
         run: |
           echo "${{ steps.gitversion.outputs.semVer }}" > block_pvc_scanner/src/block_pvc_scanner/VERSION
