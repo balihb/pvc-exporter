@@ -117,6 +117,13 @@ jobs:
           updateFile: true
           message: 'Update appVersion to ${{ steps.image.outputs.version }}'
 
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: "block_pvc_scanner/dist/*.tar.gz,pod_pvc_mapping/dist/*.tar.gz"
+          tag: ${{ steps.gitversion.outputs.semVer }}
+          commit: ${{ github.ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Configure Git
         run: |
           git config user.name "$GITHUB_ACTOR"
@@ -129,9 +136,3 @@ jobs:
       - uses: helm/chart-releaser-action@v1.2.1
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-      - uses: ncipollo/release-action@v1
-        with:
-          artifacts: "block_pvc_scanner/dist/*.tar.gz,pod_pvc_mapping/dist/*.tar.gz"
-          tag: ${{ steps.gitversion.outputs.semVer }}
-          commit: ${{ github.ref }}
-          token: ${{ secrets.GITHUB_TOKEN }}
