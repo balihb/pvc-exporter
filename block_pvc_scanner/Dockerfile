@@ -1,6 +1,8 @@
 ARG base_image_version=3.9.7-alpine3.14
 FROM python:${base_image_version} as builder
 
+RUN apk update && apk add gcc libc-dev linux-headers
+
 # setup build venv
 ENV VIRTUAL_ENV=/opt/build-venv
 RUN python3 -m venv --system-site-packages $VIRTUAL_ENV
