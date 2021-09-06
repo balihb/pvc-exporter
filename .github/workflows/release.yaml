@@ -2,7 +2,7 @@ name: release
 on:
   push:
     branches:
-      - master
+      - omaster
 jobs:
   release:
     runs-on: ubuntu-latest
