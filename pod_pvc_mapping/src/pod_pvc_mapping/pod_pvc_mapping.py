@@ -84,12 +84,12 @@ def main():
         new_pool_keys = set()
 
         nss = get_items(k8s_api_obj.list_namespace())
-        logger.debug(nss)
+        # logger.debug(nss)
         for i in nss:
             ns = i['metadata']['name']
-            logger.debug(ns)
+            # logger.debug(ns)
             pods = get_items(k8s_api_obj.list_namespaced_pod(ns))
-            logger.debug(pods)
+            # logger.debug(pods)
             pvcs = get_items(
                 k8s_api_obj.list_namespaced_persistent_volume_claim(ns)
             )
