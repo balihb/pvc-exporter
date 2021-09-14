@@ -30,8 +30,10 @@ def get_items(obj):
 
 def process_pods(pvcs, pods, pool: dict, new_pool_keys: set[str]):
     for pod in pods:
+        logger.debug(pod['metadata']['name'])
         for vc in pod['spec']['volumes']:
             if vc['persistent_volume_claim']:
+                logger.debug(vc['persistent_volume_claim']['claim_name'])
                 process_pvc(
                     pvc=vc['persistent_volume_claim']['claim_name'],
                     pvcs=pvcs,
@@ -46,6 +48,8 @@ def process_pvc(
     pool: dict, new_pool_keys: set[str]
 ):
     for v in pvcs:
+        logger.debug(v['metadata']['name'])
+        logger.debug(pvc)
         if v['metadata']['name'] == pvc:
             vol = v['spec']['volume_name']
             logger.info("PVC: %s, VOLUME: %s, POD: %s" % (pvc, vol, pod_name))
@@ -73,17 +77,23 @@ def main():
 
     start_http_server(os.getenv('APP_HTTP_SERVER_PORT', 8849))
 
+    config.load_incluster_config()
+    k8s_api_obj = client.CoreV1Api()
+
     while 1:
         new_pool_keys = set()
-        config.load_incluster_config()
-        k8s_api_obj = client.CoreV1Api()
+
         nss = get_items(k8s_api_obj.list_namespace())
+        logger.debug(nss)
         for i in nss:
             ns = i['metadata']['name']
+            logger.debug(ns)
             pods = get_items(k8s_api_obj.list_namespaced_pod(ns))
+            logger.debug(pods)
             pvcs = get_items(
                 k8s_api_obj.list_namespaced_persistent_volume_claim(ns)
             )
+            logger.debug(pvcs)
             process_pods(pods, pool, pvcs, new_pool_keys)
 
         old_pool_keys = cleanup_pool(
