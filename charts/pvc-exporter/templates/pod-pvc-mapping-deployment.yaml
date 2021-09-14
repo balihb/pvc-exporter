@@ -7,6 +7,13 @@ metadata:
   labels:
     app: {{ $fullName }}
     com: {{ $fullName }}-pod-pvc-mapping
+    {{- with .Values.PodPvcMapping.deployment.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.PodPvcMapping.deployment.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   replicas: {{ .Values.PodPvcMapping.replicaCount }}
   strategy:
@@ -20,6 +27,13 @@ spec:
       labels:
         app: {{ $fullName }}
         com: {{ $fullName }}-pod-pvc-mapping
+        {{- with .Values.PodPvcMapping.pod.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.PodPvcMapping.pod.annotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
     spec:
       imagePullSecrets:
         {{- toYaml .Values.PodPvcMapping.image.pullSecrets | nindent 8 }}

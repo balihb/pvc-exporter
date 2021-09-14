@@ -4,6 +4,8 @@
 
 namespace: pvc-exporter
 createNamespace: true
+namespaceLabels: { }
+namespaceAnnotations: { }
 
 PodPvcMapping:
   image:
@@ -61,6 +63,14 @@ PodPvcMapping:
     allowPrivilegeEscalation: false
     readOnlyRootFilesystem: true
 
+  deployment:
+    labels: { }
+    annotations: { }
+
+  pod:
+    labels: { }
+    annotations: { }
+
 BlockPvcScanner:
   image:
     repository: balihb/block-pvc-scanner
@@ -115,5 +125,27 @@ BlockPvcScanner:
     allowPrivilegeEscalation: false
     readOnlyRootFilesystem: true
 
+  daemonSet:
+    labels: { }
+    annotations: { }
+
+  pod:
+    labels: { }
+    annotations: { }
+
 serviceMonitor:
   enabled: true
+  labels: { }
+  annotations: { }
+
+clusterRole:
+  labels: { }
+  annotations: { }
+
+clusterRoleBinding:
+  labels: { }
+  annotations: { }
+
+serviceAccount:
+  labels: { }
+  annotations: { }
