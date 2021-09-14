@@ -28,7 +28,7 @@ def get_items(obj):
     return items
 
 
-def process_pods(pvcs, pods, pool: dict, new_pool_keys: set[str]):
+def process_pods(pods, pool: dict, pvcs, new_pool_keys: set[str]):
     for pod in pods:
         logger.debug(pod['metadata']['name'])
         for vc in pod['spec']['volumes']:
