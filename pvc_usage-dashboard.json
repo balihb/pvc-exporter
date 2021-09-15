@@ -8,6 +8,12 @@
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
         "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
         "type": "dashboard"
       }
     ]
@@ -15,7 +21,6 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 22,
   "links": [],
   "panels": [
     {
@@ -24,22 +29,16 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": null,
-      "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
-        "overrides": []
-      },
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
-        "h": 8,
+        "h": 9,
         "w": 12,
         "x": 0,
         "y": 0
       },
       "hiddenSeries": false,
-      "id": 4,
+      "id": 8,
       "legend": {
         "avg": false,
         "current": false,
@@ -52,8 +51,11 @@
       "lines": true,
       "linewidth": 1,
       "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
       "percentage": false,
-      "pluginVersion": "7.1.5",
+      "pluginVersion": "8.1.2",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -63,9 +65,10 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "(sum without (pod,service,namespace,job,instance,endpoint) (pvc_usage)) + on(volumename) group_left(storageclass,namespace,node,persistentvolumeclaim) kube_persistentvolumeclaim_info*0",
+          "exemplar": true,
+          "expr": "label_join((sum without (pod,service,namespace,job,instance,endpoint) (pvc_usage_used_bytes)) + on(volumename) group_left(persistentvolumeclaim,mountedby)pvc_mapping*0,\"pod_pvc\",\" : \",\"ns\",\"mountedby\",\"persistentvolumeclaim\")",
           "interval": "",
-          "legendFormat": "{{persistentvolumeclaim}}",
+          "legendFormat": "{{pod_pvc}}",
           "refId": "A"
         }
       ],
@@ -73,7 +76,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "PVC Usage",
+      "title": "POD PVC Usage (bytes)",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -89,8 +92,8 @@
       },
       "yaxes": [
         {
-          "$$hashKey": "object:615",
-          "format": "percentunit",
+          "$$hashKey": "object:671",
+          "format": "bytes",
           "label": null,
           "logBase": 1,
           "max": null,
@@ -98,8 +101,8 @@
           "show": true
         },
         {
-          "$$hashKey": "object:616",
-          "format": "percentunit",
+          "$$hashKey": "object:672",
+          "format": "bytes",
           "label": null,
           "logBase": 1,
           "max": null,
@@ -118,19 +121,13 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": null,
-      "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
-        "overrides": []
-      },
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 8
+        "y": 9
       },
       "hiddenSeries": false,
       "id": 2,
@@ -146,8 +143,11 @@
       "lines": true,
       "linewidth": 1,
       "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
       "percentage": false,
-      "pluginVersion": "7.1.5",
+      "pluginVersion": "8.1.2",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -157,7 +157,8 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "label_join((sum without (pod,service,namespace,job,instance,endpoint) (pvc_usage)) + on(volumename) group_left(persistentvolumeclaim,mountedby)pvc_mapping*0,\"pod_pvc\",\" : \",\"mountedby\",\"persistentvolumeclaim\")",
+          "exemplar": true,
+          "expr": "label_join((sum without (pod,service,namespace,job,instance,endpoint) (pvc_usage)) + on(volumename) group_left(persistentvolumeclaim,mountedby)pvc_mapping*0,\"pod_pvc\",\" : \",\"ns\",\"mountedby\",\"persistentvolumeclaim\")",
           "interval": "",
           "legendFormat": "{{pod_pvc}}",
           "refId": "A"
@@ -167,7 +168,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "POD PVC Mapping",
+      "title": "POD PVC Usage (%)",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -184,7 +185,7 @@
       "yaxes": [
         {
           "$$hashKey": "object:671",
-          "format": "percentunit",
+          "format": "percent",
           "label": null,
           "logBase": 1,
           "max": null,
@@ -193,7 +194,7 @@
         },
         {
           "$$hashKey": "object:672",
-          "format": "percentunit",
+          "format": "percent",
           "label": null,
           "logBase": 1,
           "max": null,
@@ -208,7 +209,7 @@
     }
   ],
   "refresh": "10s",
-  "schemaVersion": 26,
+  "schemaVersion": 30,
   "style": "dark",
   "tags": [],
   "templating": {
@@ -235,5 +236,5 @@
   "timezone": "",
   "title": "pvc_usage",
   "uid": "7YOYYp-Mz",
-  "version": 11
+  "version": 3
 }

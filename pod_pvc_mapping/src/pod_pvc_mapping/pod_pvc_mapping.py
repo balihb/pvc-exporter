@@ -18,7 +18,7 @@ logger.addHandler(print_log)
 gauge = Gauge(
     'pvc_mapping',
     'fetching the mapping between pod and pvc',
-    ['persistentvolumeclaim', 'volumename', 'mountedby']
+    ['persistentvolumeclaim', 'volumename', 'mountedby', 'ns']
 )
 
 
@@ -28,7 +28,7 @@ def get_items(obj):
     return items
 
 
-def process_pods(pods, pool: dict, pvcs, new_pool_keys: set[str]):
+def process_pods(pods, pool: dict, pvcs, ns: str, new_pool_keys: set[str]):
     for pod in pods:
         logger.debug(pod['metadata']['name'])
         try:
@@ -39,6 +39,7 @@ def process_pods(pods, pool: dict, pvcs, new_pool_keys: set[str]):
                         pvc=vc['persistent_volume_claim']['claim_name'],
                         pvcs=pvcs,
                         pod_name=pod['metadata']['name'],
+                        ns=ns,
                         pool=pool,
                         new_pool_keys=new_pool_keys
                     )
@@ -48,7 +49,7 @@ def process_pods(pods, pool: dict, pvcs, new_pool_keys: set[str]):
 
 def process_pvc(
     pvc: str, pvcs, pod_name: str,
-    pool: dict, new_pool_keys: set[str]
+    pool: dict, ns: str, new_pool_keys: set[str]
 ):
     for v in pvcs:
         logger.debug(v['metadata']['name'])
@@ -58,17 +59,16 @@ def process_pvc(
             logger.info("PVC: %s, VOLUME: %s, POD: %s" % (pvc, vol, pod_name))
             new_pool_keys.add(pvc)
             if pvc in pool.keys():
-                gauge.remove(pvc, pool[pvc][0], pool[pvc][1])
-                gauge.labels(pvc, vol, pod_name)
-                pool[pvc] = [vol, pod_name]
-            else:
-                gauge.labels(pvc, vol, pod_name)
-                pool[pvc] = [vol, pod_name]
+                gauge.remove(
+                    pvc, pool[pvc].vol, pool[pvc].pod_name, pool[pvc].ns
+                )
+            gauge.labels(pvc, vol, pod_name, ns)
+            pool[pvc] = {"vol": vol, "pod_name": pod_name, "ns": ns}
 
 
 def cleanup_pool(pool: dict, old_pool_keys: set[str], new_pool_keys: set[str]):
     for pvc in old_pool_keys - new_pool_keys:
-        gauge.remove(pvc, pool[pvc][0], pool[pvc][1])
+        gauge.remove(pvc, pool[pvc].vol, pool[pvc].pod_name, pool[pvc].ns)
         pool.pop(pvc)
     return pool.keys()
 
@@ -97,7 +97,7 @@ def main():
                 k8s_api_obj.list_namespaced_persistent_volume_claim(ns)
             )
             logger.debug(pvcs)
-            process_pods(pods, pool, pvcs, new_pool_keys)
+            process_pods(pods, pool, pvcs, ns, new_pool_keys)
 
         old_pool_keys = cleanup_pool(
             pool=pool,
