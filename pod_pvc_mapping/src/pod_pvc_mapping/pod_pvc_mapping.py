@@ -31,16 +31,19 @@ def get_items(obj):
 def process_pods(pods, pool: dict, pvcs, new_pool_keys: set[str]):
     for pod in pods:
         logger.debug(pod['metadata']['name'])
-        for vc in pod['spec']['volumes']:
-            if vc['persistent_volume_claim']:
-                logger.debug(vc['persistent_volume_claim']['claim_name'])
-                process_pvc(
-                    pvc=vc['persistent_volume_claim']['claim_name'],
-                    pvcs=pvcs,
-                    pod_name=pod['metadata']['name'],
-                    pool=pool,
-                    new_pool_keys=new_pool_keys
-                )
+        try:
+            for vc in pod['spec']['volumes']:
+                if vc['persistent_volume_claim']:
+                    logger.debug(vc['persistent_volume_claim']['claim_name'])
+                    process_pvc(
+                        pvc=vc['persistent_volume_claim']['claim_name'],
+                        pvcs=pvcs,
+                        pod_name=pod['metadata']['name'],
+                        pool=pool,
+                        new_pool_keys=new_pool_keys
+                    )
+        except TypeError:
+            pass
 
 
 def process_pvc(
