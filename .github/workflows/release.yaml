@@ -84,7 +84,7 @@ jobs:
           commit: ${{ github.ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
-  docker-release:
+  docker-release-bps:
     runs-on: ubuntu-latest
     needs:
       - version
@@ -95,6 +95,68 @@ jobs:
       - name: VERSION file block-pvc-scanner
         run: |
           echo "${{ needs.version.outputs.semVer }}" > block_pvc_scanner/src/block_pvc_scanner/VERSION
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up QEMU
+        id: qemu
+        uses: docker/setup-qemu-action@v1
+        with:
+          platforms: arm64
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-bps-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-bps-buildx-
+
+      - name: Docker build and push block-pvc-scanner
+        id: docker_build_block_pvc_scanner
+        uses: docker/build-push-action@v2
+        with:
+          context: ./block_pvc_scanner
+          file: ./block_pvc_scanner/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          builder: ${{ steps.buildx.outputs.name }}
+          tags: |
+            ${{ secrets.DOCKER_HUB_USERNAME }}/block-pvc-scanner:${{ needs.version.outputs.semVer }}
+            ${{ secrets.DOCKER_HUB_USERNAME }}/block-pvc-scanner:latest
+            ghcr.io/${{ github.repository_owner }}/block-pvc-scanner:${{ needs.version.outputs.semVer }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+      - # Temp fix
+        # https://github.com/docker/build-push-action/issues/252
+        # https://github.com/moby/buildkit/issues/1896
+        name: Move Docker cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+  docker-release-ppm:
+    runs-on: ubuntu-latest
+    needs:
+      - version
+      - pre-commit
+      - sonar
+    steps:
+      - uses: actions/checkout@v2
       - name: VERSION file pod-pvc-mapping
         run: |
           echo "${{ needs.version.outputs.semVer }}" > pod_pvc_mapping/src/pod_pvc_mapping/VERSION
@@ -125,25 +187,10 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          key: ${{ runner.os }}-ppm-buildx-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-buildx-
+            ${{ runner.os }}-ppm-buildx-
 
-      - name: Docker build and push block-pvc-scanner
-        id: docker_build_block_pvc_scanner
-        uses: docker/build-push-action@v2
-        with:
-          context: ./block_pvc_scanner
-          file: ./block_pvc_scanner/Dockerfile
-          platforms: linux/amd64,linux/arm64
-          push: true
-          builder: ${{ steps.buildx.outputs.name }}
-          tags: |
-            ${{ secrets.DOCKER_HUB_USERNAME }}/block-pvc-scanner:${{ needs.version.outputs.semVer }}
-            ${{ secrets.DOCKER_HUB_USERNAME }}/block-pvc-scanner:latest
-            ghcr.io/${{ github.repository_owner }}/block-pvc-scanner:${{ needs.version.outputs.semVer }}
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
       - name: Docker build and push pod-pvc-mapping
         id: docker_build_pod_pvc_mapping
         uses: docker/build-push-action@v2
@@ -172,7 +219,8 @@ jobs:
     needs:
       - version
       - python-release
-      - docker-release
+      - docker-release-bps
+      - docker-release-ppm
     steps:
       - uses: actions/checkout@v2
       - name: Update chart version in the related HelmChart Charts.yaml
