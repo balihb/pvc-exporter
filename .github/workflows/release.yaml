@@ -91,7 +91,6 @@ jobs:
       - version
       - pre-commit
       - sonar
-      - python-release
     steps:
       - uses: actions/checkout@v2
       - name: VERSION file block-pvc-scanner
@@ -136,7 +135,6 @@ jobs:
       - version
       - pre-commit
       - sonar
-      - python-release
     steps:
       - uses: actions/checkout@v2
       - name: VERSION file block-pvc-scanner
@@ -187,7 +185,6 @@ jobs:
       - version
       - pre-commit
       - sonar
-      - python-release
     steps:
       - uses: actions/checkout@v2
       - name: VERSION file pod-pvc-mapping
@@ -232,7 +229,6 @@ jobs:
       - version
       - pre-commit
       - sonar
-      - python-release
     steps:
       - uses: actions/checkout@v2
       - name: VERSION file pod-pvc-mapping
