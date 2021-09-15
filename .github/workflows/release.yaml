@@ -32,7 +32,7 @@ jobs:
         id: cache-sonar
         uses: actions/cache@v2
         with:
-          path: /opt/sonar-scanner/.sonar/cache
+          path: /opt/sonar-scanner
           key: ${{ runner.os }}-sonar
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
