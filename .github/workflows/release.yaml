@@ -4,8 +4,10 @@ on:
     branches:
       - omaster
 jobs:
-  release:
+  version:
     runs-on: ubuntu-latest
+    outputs:
+      semVer: ${{ steps.gitversion.outputs.semVer }}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -20,28 +22,49 @@ jobs:
         with:
           useConfigFile: true
 
+  sonar:
+    runs-on: ubuntu-latest
+    needs:
+      - version
+    steps:
+      - uses: actions/checkout@v2
       - name: Sonar cache
         id: cache-sonar
         uses: actions/cache@v2
         with:
           path: /opt/sonar-scanner/.sonar/cache
           key: ${{ runner.os }}-sonar
-
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         with:
           args: >
-            -Dsonar.projectVersion=${{ steps.gitversion.outputs.semVer }}
+            -Dsonar.projectVersion=${{ needs.version.outputs.semVer }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+      - uses: pre-commit/action@v2.0.3
+
+  python-release:
+    runs-on: ubuntu-latest
+    needs:
+      - version
+      - pre-commit
+      - sonar
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
       - name: VERSION file block-pvc-scanner
         run: |
-          echo "${{ steps.gitversion.outputs.semVer }}" > block_pvc_scanner/src/block_pvc_scanner/VERSION
+          echo "${{ needs.version.outputs.semVer }}" > block_pvc_scanner/src/block_pvc_scanner/VERSION
       - name: VERSION file pod-pvc-mapping
         run: |
-          echo "${{ steps.gitversion.outputs.semVer }}" > pod_pvc_mapping/src/pod_pvc_mapping/VERSION
+          echo "${{ needs.version.outputs.semVer }}" > pod_pvc_mapping/src/pod_pvc_mapping/VERSION
       - name: build deps
         run: |
           python3 -m pip install --upgrade build
@@ -53,6 +76,28 @@ jobs:
         run: |
           cd pod_pvc_mapping
           python3 -m build --sdist
+
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: "block_pvc_scanner/dist/*.tar.gz,pod_pvc_mapping/dist/*.tar.gz"
+          tag: ${{ needs.version.outputs.semVer }}
+          commit: ${{ github.ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  docker-release:
+    runs-on: ubuntu-latest
+    needs:
+      - version
+      - pre-commit
+      - sonar
+    steps:
+      - uses: actions/checkout@v2
+      - name: VERSION file block-pvc-scanner
+        run: |
+          echo "${{ needs.version.outputs.semVer }}" > block_pvc_scanner/src/block_pvc_scanner/VERSION
+      - name: VERSION file pod-pvc-mapping
+        run: |
+          echo "${{ needs.version.outputs.semVer }}" > pod_pvc_mapping/src/pod_pvc_mapping/VERSION
 
       - name: Login to Docker Hub
         uses: docker/login-action@v1
@@ -94,9 +139,9 @@ jobs:
           push: true
           builder: ${{ steps.buildx.outputs.name }}
           tags: |
-            ${{ secrets.DOCKER_HUB_USERNAME }}/block-pvc-scanner:${{ steps.gitversion.outputs.semVer }}
+            ${{ secrets.DOCKER_HUB_USERNAME }}/block-pvc-scanner:${{ needs.version.outputs.semVer }}
             ${{ secrets.DOCKER_HUB_USERNAME }}/block-pvc-scanner:latest
-            ghcr.io/${{ github.repository_owner }}/block-pvc-scanner:${{ steps.gitversion.outputs.semVer }}
+            ghcr.io/${{ github.repository_owner }}/block-pvc-scanner:${{ needs.version.outputs.semVer }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
       - name: Docker build and push pod-pvc-mapping
@@ -109,9 +154,9 @@ jobs:
           push: true
           builder: ${{ steps.buildx.outputs.name }}
           tags: |
-            ${{ secrets.DOCKER_HUB_USERNAME }}/pod-pvc-mapping:${{ steps.gitversion.outputs.semVer }}
+            ${{ secrets.DOCKER_HUB_USERNAME }}/pod-pvc-mapping:${{ needs.version.outputs.semVer }}
             ${{ secrets.DOCKER_HUB_USERNAME }}/pod-pvc-mapping:latest
-            ghcr.io/${{ github.repository_owner }}/pod-pvc-mapping:${{ steps.gitversion.outputs.semVer }}
+            ghcr.io/${{ github.repository_owner }}/pod-pvc-mapping:${{ needs.version.outputs.semVer }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
       - # Temp fix
@@ -122,33 +167,34 @@ jobs:
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
+  helm-release:
+    runs-on: ubuntu-latest
+    needs:
+      - version
+      - python-release
+      - docker-release
+    steps:
+      - uses: actions/checkout@v2
       - name: Update chart version in the related HelmChart Charts.yaml
         uses: fjogeleit/yaml-update-action@master
         with:
           valueFile: 'charts/pvc-exporter/Chart.yaml'
           propertyPath: 'version'
-          value: ${{ steps.gitversion.outputs.semVer }}
+          value: ${{ needs.version.outputs.semVer }}
           createPR: false
           commitChange: false
           updateFile: true
-          message: 'Update chart version to ${{ steps.image.outputs.version }}'
+          message: 'Update chart version to ${{ needs.version.outputs.version }}'
       - name: Update appVersion in the related HelmChart Charts.yaml
         uses: fjogeleit/yaml-update-action@master
         with:
           valueFile: 'charts/pvc-exporter/Chart.yaml'
           propertyPath: 'appVersion'
-          value: "${{ steps.gitversion.outputs.semVer }}"
+          value: ${{ needs.version.outputs.semVer }}
           createPR: false
           commitChange: false
           updateFile: true
-          message: 'Update appVersion to ${{ steps.image.outputs.version }}'
-
-      - uses: ncipollo/release-action@v1
-        with:
-          artifacts: "block_pvc_scanner/dist/*.tar.gz,pod_pvc_mapping/dist/*.tar.gz"
-          tag: ${{ steps.gitversion.outputs.semVer }}
-          commit: ${{ github.ref }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          message: 'Update appVersion to ${{ needs.version.outputs.version }}'
 
       - name: Configure Git
         run: |
