@@ -20,6 +20,13 @@ jobs:
         with:
           useConfigFile: true
 
+      - name: Sonar cache
+        id: cache-sonar
+        uses: actions/cache@v2
+        with:
+          path: /opt/sonar-scanner/.sonar/cache
+          key: ${{ runner.os }}-sonar
+
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         with:
@@ -68,6 +75,7 @@ jobs:
       - name: Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v1
+
       - name: Cache Docker layers
         uses: actions/cache@v2
         with:

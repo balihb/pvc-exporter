@@ -56,11 +56,15 @@ def process_pvc(
         logger.debug(pvc)
         if v['metadata']['name'] == pvc:
             vol = v['spec']['volume_name']
-            logger.info("PVC: %s, VOLUME: %s, POD: %s" % (pvc, vol, pod_name))
+            logger.info(
+                "NS: %s, POD: %s, VOLUME: %s, PVC: %s" %
+                (ns, pod_name, vol, pvc)
+            )
             new_pool_keys.add(pvc)
             if pvc in pool.keys():
                 gauge.remove(
-                    pvc, pool[pvc].vol, pool[pvc].pod_name, pool[pvc].ns
+                    pvc,
+                    pool[pvc]["vol"], pool[pvc]["pod_name"], pool[pvc]["ns"]
                 )
             gauge.labels(pvc, vol, pod_name, ns)
             pool[pvc] = {"vol": vol, "pod_name": pod_name, "ns": ns}
@@ -68,7 +72,9 @@ def process_pvc(
 
 def cleanup_pool(pool: dict, old_pool_keys: set[str], new_pool_keys: set[str]):
     for pvc in old_pool_keys - new_pool_keys:
-        gauge.remove(pvc, pool[pvc].vol, pool[pvc].pod_name, pool[pvc].ns)
+        gauge.remove(
+            pvc, pool[pvc]["vol"], pool[pvc]["pod_name"], pool[pvc]["ns"]
+        )
         pool.pop(pvc)
     return pool.keys()
 
