@@ -282,6 +282,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - version
+      - python-release
       - docker-release-bps
       - docker-release-ppm
       - docker-release-bps-arm
