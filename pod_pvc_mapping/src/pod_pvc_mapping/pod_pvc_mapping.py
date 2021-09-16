@@ -45,7 +45,7 @@ def process_pods(
                 lambda voc:
                 voc['persistent_volume_claim']['claim_name'],
                 list(filter(
-                    lambda voc: vc['persistent_volume_claim'],
+                    lambda vocl: vocl['persistent_volume_claim'],
                     pod['spec']['volumes']
                 ))
             )))
