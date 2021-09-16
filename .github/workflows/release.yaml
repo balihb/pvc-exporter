@@ -23,7 +23,6 @@ jobs:
         uses: gittools/actions/gitversion/execute@v0.9.10
         with:
           useConfigFile: true
-      - uses: actions/checkout@v2
       - name: Sonar cache
         id: cache-sonar
         uses: actions/cache@v2
