@@ -118,7 +118,13 @@ def main():
                 k8s_api.list_namespaced_persistent_volume_claim(ns)
             )
             logger.debug('pvcs:')
-            logger.debug(pvcs)
+            logger.debug(map(
+                    lambda v: (
+                        v['metadata']['name'],
+                        v['spec']['volume_name']
+                    ),
+                    pvcs
+            ))
             if len(pvcs) != 0 and len(pods) != 0:
                 process_pods(pods, pool, pvcs, ns, new_pool_keys)
 
