@@ -2,6 +2,7 @@ import logging
 import os
 from collections import namedtuple
 from time import sleep
+from typing import Any
 
 from kubernetes import client, config
 from kubernetes.client import CoreV1Api
@@ -33,12 +34,14 @@ def get_items(obj):
 
 
 def process_pods(
-    pods, pool: dict[str, Volume],
-    pvcs, ns: str, new_pool_keys: set[str]
+    pods: list[Any], pool: dict[str, Volume],
+    pvcs: list[Any], ns: str, new_pool_keys: set[str]
 ):
     for pod in pods:
         logger.debug(f"pod: {pod['metadata']['name']}")
         try:
+            logger.debug('volumes')
+            logger.debug(pod['spec']['volumes'])
             for vc in pod['spec']['volumes']:
                 if vc['persistent_volume_claim']:
                     logger.debug(
@@ -57,7 +60,7 @@ def process_pods(
 
 
 def process_pvc(
-    pvc: str, pvcs, pod_name: str,
+    pvc: str, pvcs: list[Any], pod_name: str,
     pool: dict[str, Volume], ns: str, new_pool_keys: set[str]
 ):
     for v in pvcs:
@@ -104,19 +107,20 @@ def main():
     while 1:
         new_pool_keys: set[str] = set()
 
-        nss = get_items(k8s_api.list_namespace())
+        nss: list[Any] = get_items(k8s_api.list_namespace())
         # logger.debug(nss)
         for i in nss:
             ns = i['metadata']['name']
             # logger.debug(ns)
-            pods = get_items(k8s_api.list_namespaced_pod(ns))
+            pods: list[Any] = get_items(k8s_api.list_namespaced_pod(ns))
             # logger.debug(pods)
-            pvcs = get_items(
+            pvcs: list[Any] = get_items(
                 k8s_api.list_namespaced_persistent_volume_claim(ns)
             )
             logger.debug('pvcs:')
             logger.debug(pvcs)
-            process_pods(pods, pool, pvcs, ns, new_pool_keys)
+            if len(pvcs) != 0 and len(pods) != 0:
+                process_pods(pods, pool, pvcs, ns, new_pool_keys)
 
         old_pool_keys = cleanup_pool(
             pool=pool,
