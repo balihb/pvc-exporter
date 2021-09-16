@@ -1,9 +1,13 @@
 import logging
 import os
+from collections import namedtuple
 from time import sleep
 
 from kubernetes import client, config
+from kubernetes.client import CoreV1Api
 from prometheus_client import start_http_server, Gauge
+
+Volume = namedtuple('Volume', ['vol', 'ns', 'pod'])
 
 formatter = logging.Formatter(os.getenv(
     'APP_LOG_FORMAT',
@@ -28,13 +32,18 @@ def get_items(obj):
     return items
 
 
-def process_pods(pods, pool: dict, pvcs, ns: str, new_pool_keys: set[str]):
+def process_pods(
+    pods, pool: dict[str, Volume],
+    pvcs, ns: str, new_pool_keys: set[str]
+):
     for pod in pods:
-        logger.debug(pod['metadata']['name'])
+        logger.debug(f"pod: {pod['metadata']['name']}")
         try:
             for vc in pod['spec']['volumes']:
                 if vc['persistent_volume_claim']:
-                    logger.debug(vc['persistent_volume_claim']['claim_name'])
+                    logger.debug(
+                        f"claim: {vc['persistent_volume_claim']['claim_name']}"
+                    )
                     process_pvc(
                         pvc=vc['persistent_volume_claim']['claim_name'],
                         pvcs=pvcs,
@@ -49,11 +58,11 @@ def process_pods(pods, pool: dict, pvcs, ns: str, new_pool_keys: set[str]):
 
 def process_pvc(
     pvc: str, pvcs, pod_name: str,
-    pool: dict, ns: str, new_pool_keys: set[str]
+    pool: dict[str, Volume], ns: str, new_pool_keys: set[str]
 ):
     for v in pvcs:
-        logger.debug(v['metadata']['name'])
-        logger.debug(pvc)
+        logger.debug(f"vol name: {v['metadata']['name']}")
+        logger.debug(f'pvc: {pvc}')
         if v['metadata']['name'] == pvc:
             vol = v['spec']['volume_name']
             logger.info(
@@ -64,44 +73,48 @@ def process_pvc(
             if pvc in pool.keys():
                 gauge.remove(
                     pvc,
-                    pool[pvc]["vol"], pool[pvc]["pod_name"], pool[pvc]["ns"]
+                    pool[pvc].vol, pool[pvc].pod, pool[pvc].ns
                 )
             gauge.labels(pvc, vol, pod_name, ns)
-            pool[pvc] = {"vol": vol, "pod_name": pod_name, "ns": ns}
+            pool[pvc] = Volume(vol=vol, pod=pod_name, ns=ns)
 
 
-def cleanup_pool(pool: dict, old_pool_keys: set[str], new_pool_keys: set[str]):
+def cleanup_pool(
+    pool: dict[str, Volume],
+    old_pool_keys: set[str], new_pool_keys: set[str]
+) -> set[str]:
     for pvc in old_pool_keys - new_pool_keys:
         gauge.remove(
-            pvc, pool[pvc]["vol"], pool[pvc]["pod_name"], pool[pvc]["ns"]
+            pvc, pool[pvc].vol, pool[pvc].pod, pool[pvc].ns
         )
         pool.pop(pvc)
-    return pool.keys()
+    return set(pool.keys())
 
 
 def main():
-    pool = {}
+    pool: dict[str, Volume] = {}
 
-    old_pool_keys = set()
+    old_pool_keys: set[str] = set()
 
     start_http_server(os.getenv('APP_HTTP_SERVER_PORT', 8849))
 
     config.load_incluster_config()
-    k8s_api_obj = client.CoreV1Api()
+    k8s_api: CoreV1Api = client.CoreV1Api()
 
     while 1:
-        new_pool_keys = set()
+        new_pool_keys: set[str] = set()
 
-        nss = get_items(k8s_api_obj.list_namespace())
+        nss = get_items(k8s_api.list_namespace())
         # logger.debug(nss)
         for i in nss:
             ns = i['metadata']['name']
             # logger.debug(ns)
-            pods = get_items(k8s_api_obj.list_namespaced_pod(ns))
+            pods = get_items(k8s_api.list_namespaced_pod(ns))
             # logger.debug(pods)
             pvcs = get_items(
-                k8s_api_obj.list_namespaced_persistent_volume_claim(ns)
+                k8s_api.list_namespaced_persistent_volume_claim(ns)
             )
+            logger.debug('pvcs:')
             logger.debug(pvcs)
             process_pods(pods, pool, pvcs, ns, new_pool_keys)
 
