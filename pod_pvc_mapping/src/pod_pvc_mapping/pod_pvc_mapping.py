@@ -42,11 +42,12 @@ def process_pods(
         try:
             logger.debug('volumes:')
             logger.debug(list(map(
-                lambda voc: (
-                    voc['persistent_volume_claim'],
-                    voc['persistent_volume_claim']['claim_name']
-                ),
-                pod['spec']['volumes']
+                lambda voc:
+                voc['persistent_volume_claim']['claim_name'],
+                list(filter(
+                    lambda voc: vc['persistent_volume_claim'],
+                    pod['spec']['volumes']
+                ))
             )))
             for vc in pod['spec']['volumes']:
                 if vc['persistent_volume_claim']:
@@ -125,11 +126,11 @@ def main():
             )
             logger.debug('pvcs:')
             logger.debug(list(map(
-                    lambda v: (
-                        v['metadata']['name'],
-                        v['spec']['volume_name']
-                    ),
-                    pvcs
+                lambda v: (
+                    v['metadata']['name'],
+                    v['spec']['volume_name']
+                ),
+                pvcs
             )))
             if len(pvcs) != 0 and len(pods) != 0:
                 process_pods(pods, pool, pvcs, ns, new_pool_keys)
