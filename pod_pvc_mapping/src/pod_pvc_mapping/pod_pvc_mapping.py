@@ -40,8 +40,14 @@ def process_pods(
     for pod in pods:
         logger.debug(f"pod: {pod['metadata']['name']}")
         try:
-            logger.debug('volumes')
-            logger.debug(pod['spec']['volumes'])
+            logger.debug('volumes:')
+            logger.debug(list(map(
+                lambda voc: (
+                    voc['persistent_volume_claim'],
+                    voc['persistent_volume_claim']['claim_name']
+                ),
+                pod['spec']['volumes']
+            )))
             for vc in pod['spec']['volumes']:
                 if vc['persistent_volume_claim']:
                     logger.debug(
