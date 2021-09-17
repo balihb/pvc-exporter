@@ -40,8 +40,10 @@ free_bytes_gauge = Gauge(
     ['volumename']
 )
 
-supported_pvc_re = re.compile('^.+(kubernetes.io/flexvolume|kubernetes.io~csi|kubernetes.io/gce-pd/mounts).*$')  # noqa: E501
-pvc_re = re.compile('^pvc')
+supported_pvc_re = re.compile(
+    '^.+(kubernetes.io/flexvolume|kubernetes.io~csi|kubernetes.io/gce-pd/mounts).*$'  # noqa: E501
+)
+pvc_re = re.compile('^pvc-')
 gke_data_re = re.compile('^gke-data')
 
 
@@ -58,6 +60,8 @@ def main():
 
     while 1:
         labels = set()
+        for part in psutil.disk_partitions():
+            logger.debug(part.mountpoint)
         all_mount_points = list(map(
             lambda p: p.mountpoint, filter(
                 filter_supported_pvcs, psutil.disk_partitions()
