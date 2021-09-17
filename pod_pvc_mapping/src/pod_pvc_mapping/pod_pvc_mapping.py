@@ -34,8 +34,8 @@ def get_items(obj):
 
 
 def process_pods(
-    pods: list[Any], pool: dict[str, Volume],
-    pvcs: list[Any], ns: str, new_pool_keys: set[str]
+    pods: list[Any], pool: dict[Volume, str],
+    pvcs: list[Any], ns: str, new_pool_keys: set[Volume]
 ):
     for pod in pods:
         logger.debug(f"pod: {pod['metadata']['name']}")
@@ -68,43 +68,44 @@ def process_pods(
 
 def process_pvc(
     pvc: str, pvcs: list[Any], pod_name: str,
-    pool: dict[str, Volume], ns: str, new_pool_keys: set[str]
+    pool: dict[Volume, str], ns: str, new_pool_keys: set[Volume]
 ):
     for v in pvcs:
         logger.debug(f"vol name: {v['metadata']['name']}")
         logger.debug(f'pvc: {pvc}')
         if v['metadata']['name'] == pvc:
-            vol = v['spec']['volume_name']
+            vol_name = v['spec']['volume_name']
             logger.info(
                 "NS: %s, POD: %s, VOLUME: %s, PVC: %s" %
-                (ns, pod_name, vol, pvc)
+                (ns, pod_name, vol_name, pvc)
             )
-            new_pool_keys.add(pvc)
-            if pvc in pool.keys():
+            vol = Volume(vol=vol_name, pod=pod_name, ns=ns)
+            new_pool_keys.add(vol)
+            if vol in pool.keys():
                 gauge.remove(
                     pvc,
-                    pool[pvc].vol, pool[pvc].pod, pool[pvc].ns
+                    vol.vol, vol.pod, vol.ns
                 )
-            gauge.labels(pvc, vol, pod_name, ns)
-            pool[pvc] = Volume(vol=vol, pod=pod_name, ns=ns)
+            gauge.labels(pvc, vol.vol, vol.pod, vol.ns)
+            pool[vol] = pvc
 
 
 def cleanup_pool(
-    pool: dict[str, Volume],
-    old_pool_keys: set[str], new_pool_keys: set[str]
-) -> set[str]:
-    for pvc in old_pool_keys - new_pool_keys:
+    pool: dict[Volume, str],
+    old_pool_keys: set[Volume], new_pool_keys: set[Volume]
+) -> set[Volume]:
+    for vol in old_pool_keys - new_pool_keys:
         gauge.remove(
-            pvc, pool[pvc].vol, pool[pvc].pod, pool[pvc].ns
+            pool[vol], vol.vol, vol.pod, vol.ns
         )
-        pool.pop(pvc)
+        pool.pop(vol)
     return set(pool.keys())
 
 
 def main():
-    pool: dict[str, Volume] = {}
+    pool: dict[Volume, str] = {}
 
-    old_pool_keys: set[str] = set()
+    old_pool_keys: set[Volume] = set[Volume]()
 
     start_http_server(os.getenv('APP_HTTP_SERVER_PORT', 8849))
 
@@ -112,7 +113,7 @@ def main():
     k8s_api: CoreV1Api = client.CoreV1Api()
 
     while 1:
-        new_pool_keys: set[str] = set()
+        new_pool_keys: set[Volume] = set[Volume]()
 
         nss: list[Any] = get_items(k8s_api.list_namespace())
         # logger.debug(nss)
