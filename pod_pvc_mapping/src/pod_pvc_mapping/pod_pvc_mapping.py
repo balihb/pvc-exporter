@@ -118,7 +118,7 @@ def main():
         # logger.debug(nss)
         for i in nss:
             ns = i['metadata']['name']
-            # logger.debug(ns)
+            logger.debug(f'ns: {ns}')
             pods: list[Any] = get_items(k8s_api.list_namespaced_pod(ns))
             # logger.debug(pods)
             pvcs: list[Any] = get_items(
