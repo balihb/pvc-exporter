@@ -42,11 +42,6 @@ jobs:
         with:
           path: /opt/sonar-scanner
           key: ${{ runner.os }}-sonar
-      - name: Download block_pvc_scanner-coverage
-        uses: actions/download-artifact@v2
-        with:
-          name: block_pvc_scanner-coverage
-          path: block_pvc_scanner
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         with:
