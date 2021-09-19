@@ -45,12 +45,27 @@ jobs:
           python-version: '3.9'
       - uses: pre-commit/action@v2.0.3
 
+  python-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+      - name: Install tox
+        run: pip install tox
+      - name: Prepare test environment
+        run: tox --notest -p auto --parallel-live
+      - name: TOX
+        run: tox
+
   python-release:
     runs-on: ubuntu-latest
     name: Python release
     needs:
       - version
       - pre-commit
+      - python-test
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
@@ -87,6 +102,7 @@ jobs:
     needs:
       - version
       - pre-commit
+      - python-test
     steps:
       - uses: actions/checkout@v2
       - name: VERSION file block-pvc-scanner
@@ -137,6 +153,7 @@ jobs:
     needs:
       - version
       - pre-commit
+      - python-test
     steps:
       - uses: actions/checkout@v2
       - name: VERSION file pod-pvc-mapping
