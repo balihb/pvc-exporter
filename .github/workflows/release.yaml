@@ -72,6 +72,9 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: block_pvc_scanner-coverage
+      - name: Display block_pvc_scanner-coverage
+        run: ls
+        working-directory: block_pvc_scanner
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         with:
@@ -88,6 +91,7 @@ jobs:
       - version
       - pre-commit
       - python-test
+      - sonar
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
@@ -123,6 +127,7 @@ jobs:
       - version
       - pre-commit
       - python-test
+      - sonar
     steps:
       - uses: actions/checkout@v2
       - name: VERSION file block-pvc-scanner
@@ -174,6 +179,7 @@ jobs:
       - version
       - pre-commit
       - python-test
+      - sonar
     steps:
       - uses: actions/checkout@v2
       - name: VERSION file pod-pvc-mapping
