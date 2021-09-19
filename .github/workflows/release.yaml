@@ -49,10 +49,9 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: block_pvc_scanner-coverage
-          working-directory: block_pvc_scanner
           path: |
-            xunit-reports
-            coverage-reports
+            block_pvc_scanner/xunit-reports
+            block_pvc_scanner/coverage-reports
 
   sonar:
     runs-on: ubuntu-latest
