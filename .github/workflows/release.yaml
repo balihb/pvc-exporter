@@ -21,20 +21,6 @@ jobs:
         uses: gittools/actions/gitversion/execute@v0.9.10
         with:
           useConfigFile: true
-      - name: Sonar cache
-        id: cache-sonar
-        uses: actions/cache@v2
-        with:
-          path: /opt/sonar-scanner
-          key: ${{ runner.os }}-sonar
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@master
-        with:
-          args: >
-            -Dsonar.projectVersion=${{ steps.gitversion.outputs.semVer }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   pre-commit:
     runs-on: ubuntu-latest
@@ -59,7 +45,41 @@ jobs:
         run: tox --notest -p auto --parallel-live
       - name: TOX
         working-directory: block_pvc_scanner
-        run: tox
+        run: tox -e py39,report-xml
+      - name: Archive coverage
+        uses: actions/upload-artifact@v2
+        with:
+          name: block_pvc_scanner-coverage
+          path: block_pvc_scanner/coverage.xml
+
+  sonar:
+    runs-on: ubuntu-latest
+    name: Sonar
+    needs:
+      - version
+      - python-test
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Sonar cache
+        id: cache-sonar
+        uses: actions/cache@v2
+        with:
+          path: /opt/sonar-scanner
+          key: ${{ runner.os }}-sonar
+      - name: Download block_pvc_scanner-coverage
+        uses: actions/download-artifact@v2
+        with:
+          name: block_pvc_scanner-coverage
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        with:
+          args: >
+            -Dsonar.projectVersion=${{ steps.gitversion.outputs.semVer }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   python-release:
     runs-on: ubuntu-latest
