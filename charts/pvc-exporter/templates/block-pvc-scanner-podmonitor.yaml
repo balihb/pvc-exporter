@@ -1,0 +1,10 @@
+{{- $fullName := include "pvc-exporter.fullname" . -}}
+{{- if .Values.BlockPvcScanner.podmonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+spec:
+  jobLabel: app
+  selector:
+    matchLabels:
+      com: {{ $fullName }}-block-pvc-scanner
+  {{- end }}

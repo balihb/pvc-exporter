@@ -133,6 +133,9 @@ BlockPvcScanner:
     labels: { }
     annotations: { }
 
+  podmonitor:
+    enabled: false
+
 serviceMonitor:
   enabled: true
   labels: { }

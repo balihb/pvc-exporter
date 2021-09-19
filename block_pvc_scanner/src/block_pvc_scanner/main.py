@@ -7,8 +7,8 @@ import psutil
 from prometheus_client import start_http_server, Gauge
 
 formatter = logging.Formatter(os.getenv(
-        'APP_LOG_FORMAT',
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    'APP_LOG_FORMAT',
+    '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 ))
 logger = logging.getLogger(__name__)
 logger.setLevel(os.getenv('APP_LOG_LEVEL', logging.INFO))
