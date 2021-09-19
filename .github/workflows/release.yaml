@@ -55,8 +55,10 @@ jobs:
       - name: Install tox
         run: pip install tox
       - name: Prepare test environment
+        working-directory: block_pvc_scanner
         run: tox --notest -p auto --parallel-live
       - name: TOX
+        working-directory: block_pvc_scanner
         run: tox
 
   python-release:
@@ -81,13 +83,11 @@ jobs:
         run: |
           python3 -m pip install --upgrade build
       - name: build Python package block-pvc-scanner
-        run: |
-          cd block_pvc_scanner
-          python3 -m build --sdist
+        working-directory: block_pvc_scanner
+        run: python3 -m build --sdist
       - name: build Python package pod-pvc-mapping
-        run: |
-          cd pod_pvc_mapping
-          python3 -m build --sdist
+        working-directory: pod_pvc_mapping
+        run: python3 -m build --sdist
 
       - uses: ncipollo/release-action@v1
         with:
