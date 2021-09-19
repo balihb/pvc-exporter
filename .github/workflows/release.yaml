@@ -5,11 +5,8 @@ on:
     branches:
       - omaster
 jobs:
-  version:
+  version-test:
     runs-on: ubuntu-latest
-    name: version
-    outputs:
-      semVer: ${{ steps.gitversion.outputs.semVer }}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -22,48 +19,23 @@ jobs:
         with:
           useConfigFile: true
 
-  pre-commit:
+  test:
     runs-on: ubuntu-latest
+    needs:
+      - version
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v2
         with:
           python-version: '3.9'
       - uses: pre-commit/action@v2.0.3
-
-  python-test:
-    runs-on: ubuntu-latest
-    needs:
-      - pre-commit
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
-        with:
-          python-version: '3.9'
       - name: Install tox
         run: pip install tox
       - name: TOX
         working-directory: block_pvc_scanner
         run: tox
-      - name: Archive coverage
-        uses: actions/upload-artifact@v2
-        with:
-          name: block_pvc_scanner-coverage
-          path: |
-            block_pvc_scanner/xunit-reports
-            block_pvc_scanner/coverage-reports
-
-  sonar:
-    runs-on: ubuntu-latest
-    name: Sonar
-    needs:
-      - version
-      - pre-commit
-      - python-test
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
       - name: Sonar cache
         id: cache-sonar
         uses: actions/cache@v2
@@ -79,7 +51,7 @@ jobs:
         uses: SonarSource/sonarcloud-github-action@master
         with:
           args: >
-            -Dsonar.projectVersion=${{ steps.gitversion.outputs.semVer }}
+            -Dsonar.projectVersion=${{ needs.version.outputs.semVer }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -89,9 +61,7 @@ jobs:
     name: Python release
     needs:
       - version
-      - pre-commit
-      - python-test
-      - sonar
+      - test
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
@@ -125,9 +95,7 @@ jobs:
     name: Docker block-pvc-scanner
     needs:
       - version
-      - pre-commit
-      - python-test
-      - sonar
+      - test
     steps:
       - uses: actions/checkout@v2
       - name: VERSION file block-pvc-scanner
@@ -177,9 +145,7 @@ jobs:
     name: Docker pod-pvc-mapping
     needs:
       - version
-      - pre-commit
-      - python-test
-      - sonar
+      - test
     steps:
       - uses: actions/checkout@v2
       - name: VERSION file pod-pvc-mapping
