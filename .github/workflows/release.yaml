@@ -42,17 +42,16 @@ jobs:
           python-version: '3.9'
       - name: Install tox
         run: pip install tox
-      - name: Prepare test environment
-        working-directory: block_pvc_scanner
-        run: tox --notest -p auto --parallel-live
       - name: TOX
         working-directory: block_pvc_scanner
-        run: tox -e py39,report-xml
+        run: tox
       - name: Archive coverage
         uses: actions/upload-artifact@v2
         with:
           name: block_pvc_scanner-coverage
-          path: block_pvc_scanner/coverage.xml
+          path: |
+            block_pvc_scanner/xunit-reports
+            block_pvc_scanner/coverage-reports
 
   sonar:
     runs-on: ubuntu-latest
