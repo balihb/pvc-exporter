@@ -72,9 +72,12 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: block_pvc_scanner-coverage
+          path: block_pvc_scanner
       - name: Display block_pvc_scanner-coverage
         run: ls
         working-directory: block_pvc_scanner
+      - name: Display block_pvc_scanner-coverage
+        run: ls
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         with:
