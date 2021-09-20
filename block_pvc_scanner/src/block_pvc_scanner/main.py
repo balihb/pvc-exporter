@@ -73,22 +73,10 @@ def mount_point_to_pvc(mount_point: str) -> str:
     return pvc
 
 
-def mount_points_to_disk_usages(
-    mount_points: set[str]
-) -> list[sdiskusage]:  # pragma: no cover
-    return [psutil.disk_usage(mount_point) for mount_point in mount_points]
-
-
 def mount_point_to_disk_usage(
     mount_point: str
 ) -> sdiskusage:  # pragma: no cover
     return psutil.disk_usage(mount_point)
-
-
-def mount_points_to_pvcs(
-    mount_points: set[str]
-) -> list[str]:  # pragma: no cover
-    return [mount_point_to_pvc(mount_point) for mount_point in mount_points]
 
 
 def update_stats(pvcs_disk_usage: dict[str, sdiskusage]):
@@ -110,10 +98,12 @@ def clean_removed_pvcs(old_pvcs: set[str], pvcs: set[str]) -> set[str]:
     return pvcs
 
 
-def process_mount_points(mount_points: set[str]):
-    for mount_point in mount_points:
-        pvc = mount_point_to_pvc(mount_point)
-    return pvc
+def process_mount_points(mount_points: set[str]) -> dict[str, sdiskusage]:
+    return {
+        mount_point_to_pvc(mount_point):
+            mount_point_to_disk_usage(mount_point)
+        for mount_point in mount_points
+    }
 
 
 def main():  # pragma: no cover
@@ -128,14 +118,11 @@ def main():  # pragma: no cover
         if len(mount_points) == 0:
             logger.info("No mounted PVC found.")
         else:
-            pvcs = mount_points_to_pvcs(mount_points)
-            disk_usages = mount_points_to_disk_usages(mount_points)
-            pvcs_disk_usage = {
-                pvcs[i]: disk_usages[i]
-                for i in range(0, len(pvcs))
-            }
+            pvcs_disk_usage: dict[str, sdiskusage] =\
+                process_mount_points(mount_points)
 
             update_stats(pvcs_disk_usage)
-            old_pvcs = clean_removed_pvcs(old_pvcs, pvcs)
+            old_pvcs =\
+                clean_removed_pvcs(old_pvcs, set(pvcs_disk_usage.keys()))
 
         time.sleep(15)
