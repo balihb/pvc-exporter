@@ -1,6 +1,6 @@
 [run]
 branch=True
-omit = ./venv/*
+omit = ./.tox, ./tests/*
 
 [report]
-omit = ./venv/*, ./tests/*
+omit = ./.tox, ./tests/*
