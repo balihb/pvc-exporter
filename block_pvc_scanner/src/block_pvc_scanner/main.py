@@ -5,6 +5,7 @@ import time
 
 import psutil
 from prometheus_client import start_http_server, Gauge
+from psutil._common import sdiskpart, sdiskusage
 
 formatter = logging.Formatter(os.getenv(
     'APP_LOG_FORMAT',
@@ -43,56 +44,85 @@ free_bytes_gauge = Gauge(
 supported_pvc_re = re.compile(
     '^.+(kubernetes.io/flexvolume|kubernetes.io~csi|kubernetes.io/gce-pd/mounts).*$'  # noqa: E501
 )
-pvc_re = re.compile('^pvc-')
+pvc_re = re.compile('^pvc-[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$')  # noqa: E501
 gke_data_re = re.compile('^gke-data')
 
 
-def filter_supported_pvcs(partition):
+def filter_supported_pvcs(partition: sdiskpart) -> bool:
     if supported_pvc_re.match(partition.mountpoint):
         return True
     return False
 
 
+def get_relevant_mount_points(partitions: list[sdiskpart]) -> set[str]:
+    return set(map(
+        lambda p: p.mountpoint, filter(
+            filter_supported_pvcs, partitions
+        )))
+
+
+def mount_point_to_pvc(mount_point: str) -> str:
+    mount_point_parts = mount_point.split('/')
+    pvc = mount_point_parts[-1]
+    if not pvc_re.match(pvc):
+        for possible_pvc in mount_point_parts:
+            if pvc_re.match(possible_pvc):
+                pvc = possible_pvc
+            elif gke_data_re.match(possible_pvc):
+                pvc = 'pvc' + possible_pvc.split('pvc')[-1]
+    return pvc
+
+
+def mount_points_to_disk_usages(
+    mount_points: set[str]
+) -> list[sdiskusage]:  # pragma: no cover
+    return [psutil.disk_usage(mount_point) for mount_point in mount_points]
+
+
+def mount_points_to_pvcs(
+    mount_points: set[str]
+) -> set[str]:  # pragma: no cover
+    return set(
+        [mount_point_to_pvc(mount_point) for mount_point in mount_points]
+    )
+
+
+def update_stats(pvcs_disk_usage: dict[str, sdiskusage]):
+    for pvc, disk_usage in pvcs_disk_usage:
+        logger.info(f'PVC: {pvc}, USAGE: {disk_usage.percent}')
+
+        percent_gauge.labels(pvc).set(disk_usage.percent)
+        total_bytes_gauge.labels(pvc).set(disk_usage.total)
+        used_bytes_gauge.labels(pvc).set(disk_usage.used)
+        free_bytes_gauge.labels(pvc).set(disk_usage.free)
+
+
+def clean_removed_pvcs(old_pvcs: set[str], pvcs: set[str]) -> set[str]:
+    for pvc in old_pvcs - pvcs:
+        percent_gauge.remove(pvc)
+        total_bytes_gauge.remove(pvc)
+        used_bytes_gauge.remove(pvc)
+        free_bytes_gauge.remove(pvc)
+    return pvcs
+
+
 def main():
     start_http_server(os.getenv('APP_HTTP_SERVER_PORT', 8848))
 
-    old_labels = set()
+    old_pvcs = set[str]()
 
     while 1:
-        labels = set()
-        for part in psutil.disk_partitions():
-            logger.debug(part.mountpoint)
-        all_mount_points = list(map(
-            lambda p: p.mountpoint, filter(
-                filter_supported_pvcs, psutil.disk_partitions()
-            )))
-        if len(all_mount_points) == 0:
-            logger.warning("No mounted PVC found.")
-        for mount_point in all_mount_points:
-            # get pvc name
-            mount_point_parts = mount_point.split('/')
-            volume = mount_point_parts[-1]
-            for possible_pvc in mount_point_parts:
-                if pvc_re.match(possible_pvc):
-                    volume = possible_pvc
-                elif gke_data_re.match(possible_pvc):
-                    volume = 'pvc' + possible_pvc.split('pvc')[-1]
+        partitions: list[sdiskpart] = \
+            psutil.disk_partitions()  # pragma: no cover
+        mount_points = get_relevant_mount_points(partitions)
+        if len(mount_points) == 0:
+            logger.info("No mounted PVC found.")
+        else:
+            pvcs = mount_points_to_pvcs(mount_points)
+            disk_usages = mount_points_to_disk_usages(mount_points)
+            pvcs_disk_usage = dict(zip(pvcs, disk_usages))
 
-            disk_usage = psutil.disk_usage(mount_point)
-            logger.info(f'VOLUME: {volume}, USAGE: {disk_usage.percent}')
-
-            percent_gauge.labels(volume).set(disk_usage.percent)
-            total_bytes_gauge.labels(volume).set(disk_usage.total)
-            used_bytes_gauge.labels(volume).set(disk_usage.used)
-            free_bytes_gauge.labels(volume).set(disk_usage.free)
-
-            labels.add(volume)
-
-        for label in old_labels - labels:
-            percent_gauge.remove(label)
-            total_bytes_gauge.remove(label)
-            used_bytes_gauge.remove(label)
-            free_bytes_gauge.remove(label)
-        old_labels = labels
+            update_stats(pvcs_disk_usage)
+            old_pvcs = clean_removed_pvcs(old_pvcs, pvcs)
 
         time.sleep(15)
