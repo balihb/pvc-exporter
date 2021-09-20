@@ -239,6 +239,8 @@ jobs:
 
       - name: Create kind cluster
         uses: helm/kind-action@v1.2.0
+        with:
+          config: kind-config.yaml
 
       - name: install prometheus crd
         run: |
