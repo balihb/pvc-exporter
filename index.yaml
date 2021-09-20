@@ -2,6 +2,22 @@ apiVersion: v1
 entries:
   pvc-exporter:
   - apiVersion: v2
+    appVersion: 0.1.68
+    created: "2021-09-20T06:17:06.666046206Z"
+    description: 'Provide 2 metrics to monitoring mounted PVC usage. Note: only used
+      for block storage provisioner.'
+    digest: 350842cfe34a16b37b163c59de20d7a143525178f72e47af09eedcc6d95d9085
+    maintainers:
+    - email: balihb@gmail.com
+      name: balihb
+    name: pvc-exporter
+    sources:
+    - https://github.com/balihb/pvc-exporter
+    type: application
+    urls:
+    - https://github.com/balihb/pvc-exporter/releases/download/pvc-exporter-0.1.68/pvc-exporter-0.1.68.tgz
+    version: 0.1.68
+  - apiVersion: v2
     appVersion: 0.1.54
     created: "2021-09-19T23:36:26.52431604Z"
     digest: 77b1d3d3bd4c6019b2e581ec9c572093058a396c1a43a9fec98812f15ea548aa
@@ -460,4 +476,4 @@ entries:
     urls:
     - https://github.com/balihb/pvc-exporter/releases/download/pvc-exporter-0.1.3-omaster.1/pvc-exporter-0.1.3-omaster.1.tgz
     version: 0.1.3-omaster.1
-generated: "2021-09-19T23:36:26.524765747Z"
+generated: "2021-09-20T06:17:06.666558909Z"
