@@ -240,6 +240,11 @@ jobs:
       - name: Create kind cluster
         uses: helm/kind-action@v1.2.0
 
+      - name: install prometheus crd
+        run: |
+          kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.50.0/example/prometheus-operator-crd/monitoring.coreos.com_podmonitors.yaml
+          kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.50.0/example/prometheus-operator-crd/monitoring.coreos.com_servicemonitors.yaml
+
       - name: Run chart-testing (install)
         run: ct install --all
 
