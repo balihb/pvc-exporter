@@ -262,6 +262,7 @@ jobs:
 
       - name: push last master
         run: |
+          git reset --hard
           git checkout last-master
           git reset --hard omaster
           git push
