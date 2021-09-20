@@ -106,14 +106,14 @@ def clean_removed_pvcs(old_pvcs: set[str], pvcs: set[str]) -> set[str]:
     return pvcs
 
 
-def main():
+def main():  # pragma: no cover
     start_http_server(os.getenv('APP_HTTP_SERVER_PORT', 8848))
 
     old_pvcs = set[str]()
 
     while 1:
         partitions: list[sdiskpart] = \
-            psutil.disk_partitions()  # pragma: no cover
+            psutil.disk_partitions()
         mount_points = get_relevant_mount_points(partitions)
         if len(mount_points) == 0:
             logger.info("No mounted PVC found.")

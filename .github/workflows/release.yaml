@@ -234,14 +234,22 @@ jobs:
       - name: Set up chart-testing
         uses: helm/chart-testing-action@v2.1.0
 
+      - name: Run chart-testing (list-changed)
+        id: list-changed
+        run: |
+          changed=$(ct list-changed --target-branch omaster)
+          if [[ -n "$changed" ]]; then
+            echo "::set-output name=changed::true"
+          fi
+
       - name: Run chart-testing (lint)
-        run: ct lint
+        run: ct lint --target-branch omaster
 
       - name: Create kind cluster
         uses: helm/kind-action@v1.2.0
 
       - name: Run chart-testing (install)
-        run: ct install
+        run: ct install --target-branch omaster
 
       - name: Configure Git
         run: |
