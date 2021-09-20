@@ -71,6 +71,11 @@ PodPvcMapping:
     labels: {}
     annotations: {}
 
+  serviceMonitor:
+    enabled: false
+    labels: {}
+    annotations: {}
+
 BlockPvcScanner:
   image:
     repository: balihb/block-pvc-scanner
@@ -133,13 +138,10 @@ BlockPvcScanner:
     labels: {}
     annotations: {}
 
-  podmonitor:
+  podMonitor:
     enabled: false
-
-serviceMonitor:
-  enabled: true
-  labels: {}
-  annotations: {}
+    labels: {}
+    annotations: {}
 
 clusterRole:
   labels: {}

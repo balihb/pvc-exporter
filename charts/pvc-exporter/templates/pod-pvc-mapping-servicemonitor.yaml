@@ -5,10 +5,10 @@ kind: ServiceMonitor
 metadata:
   labels:
     app: {{ $fullName }}
-    {{- with .Values.serviceMonitor.labels }}
+    {{- with .Values.PodPvcMapping.serviceMonitor.labels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
-  {{- with .Values.serviceMonitor.annotations }}
+  {{- with .Values.PodPvcMapping.serviceMonitor.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
@@ -17,7 +17,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: {{ $fullName }}
+      com: {{ $fullName }}-pod-pvc-mapping
   endpoints:
   - interval: 30s
     targetPort: metrics

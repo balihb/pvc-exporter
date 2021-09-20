@@ -5,3 +5,7 @@ tox.ini
 pytest.ini
 dist
 tests
+htmlcov
+**/*.egg-info
+xunit-reports
+coverage-reports
