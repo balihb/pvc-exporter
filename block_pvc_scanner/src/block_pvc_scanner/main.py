@@ -80,7 +80,8 @@ def mount_point_to_disk_usage(
 
 
 def update_stats(pvcs_disk_usage: dict[str, sdiskusage]):
-    for pvc, disk_usage in pvcs_disk_usage:
+    for pvc in pvcs_disk_usage.keys():
+        disk_usage = pvcs_disk_usage[pvc]
         logger.info(f'PVC: {pvc}, USAGE: {disk_usage.percent}')
 
         percent_gauge.labels(pvc).set(disk_usage.percent)
