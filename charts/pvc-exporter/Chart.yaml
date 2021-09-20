@@ -28,3 +28,5 @@ maintainers:
 
 sources:
   - https://github.com/balihb/pvc-exporter
+
+icon: https://raw.githubusercontent.com/balihb/pvc-exporter/omaster/images/icon.gif
