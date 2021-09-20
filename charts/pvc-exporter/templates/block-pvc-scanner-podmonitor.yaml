@@ -19,4 +19,6 @@ spec:
   selector:
     matchLabels:
       com: {{ $fullName }}-block-pvc-scanner
+  podMetricsEndpoints:
+    - port: metrics
   {{- end }}
