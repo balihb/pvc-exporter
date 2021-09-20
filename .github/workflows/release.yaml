@@ -9,6 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       semVer: ${{ steps.gitversion.outputs.semVer }}
+      branchName: ${{ steps.gitversion.outputs.BranchName }}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -258,3 +259,9 @@ jobs:
       - uses: helm/chart-releaser-action@v1.2.1
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: push last master
+        run: |
+          git checkout last-master
+          git reset --hard omaster
+          git push

@@ -30,3 +30,12 @@ sources:
   - https://github.com/balihb/pvc-exporter
 
 icon: https://raw.githubusercontent.com/balihb/pvc-exporter/omaster/images/icon.gif
+
+home: https://github.com/balihb/pvc-exporter
+
+keywords:
+  - python
+  - kubernetes
+  - monitoring
+  - k8s
+  - helm-chart
