@@ -1,6 +1,6 @@
 [run]
 branch=True
-omit = ./.tox, ./tests/*
+omit = ./.tox
 
 [report]
-omit = ./.tox, ./tests/*
+omit = ./.tox
