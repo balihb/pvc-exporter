@@ -130,7 +130,10 @@ def main():  # pragma: no cover
         else:
             pvcs = mount_points_to_pvcs(mount_points)
             disk_usages = mount_points_to_disk_usages(mount_points)
-            pvcs_disk_usage = dict(zip(pvcs, disk_usages))
+            pvcs_disk_usage = {
+                pvcs[i]: disk_usages[i]
+                for i in range(0, len(pvcs))
+            }
 
             update_stats(pvcs_disk_usage)
             old_pvcs = clean_removed_pvcs(old_pvcs, pvcs)
