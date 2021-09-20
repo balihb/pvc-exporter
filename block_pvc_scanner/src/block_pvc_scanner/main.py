@@ -79,12 +79,16 @@ def mount_points_to_disk_usages(
     return [psutil.disk_usage(mount_point) for mount_point in mount_points]
 
 
+def mount_point_to_disk_usage(
+    mount_point: str
+) -> sdiskusage:  # pragma: no cover
+    return psutil.disk_usage(mount_point)
+
+
 def mount_points_to_pvcs(
     mount_points: set[str]
-) -> set[str]:  # pragma: no cover
-    return set(
-        [mount_point_to_pvc(mount_point) for mount_point in mount_points]
-    )
+) -> list[str]:  # pragma: no cover
+    return [mount_point_to_pvc(mount_point) for mount_point in mount_points]
 
 
 def update_stats(pvcs_disk_usage: dict[str, sdiskusage]):
@@ -104,6 +108,12 @@ def clean_removed_pvcs(old_pvcs: set[str], pvcs: set[str]) -> set[str]:
         used_bytes_gauge.remove(pvc)
         free_bytes_gauge.remove(pvc)
     return pvcs
+
+
+def process_mount_points(mount_points: set[str]):
+    for mount_point in mount_points:
+        pvc = mount_point_to_pvc(mount_point)
+    return pvc
 
 
 def main():  # pragma: no cover
