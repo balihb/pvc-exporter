@@ -36,10 +36,10 @@ jobs:
       - name: TOX
         working-directory: block_pvc_scanner
         run: tox
-      - name: fix code coverage paths
-        working-directory: block_pvc_scanner
-        run: |
-          sed -i 's@'$GITHUB_WORKSPACE'@/github/workspace/@g' coverage-reports/coverage.xml
+#      - name: fix code coverage paths
+#        working-directory: block_pvc_scanner
+#        run: |
+#          sed -i 's@'$GITHUB_WORKSPACE'@/github/workspace/@g' coverage-reports/coverage.xml
       - name: Sonar cache
         id: cache-sonar
         uses: actions/cache@v2
