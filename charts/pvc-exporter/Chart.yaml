@@ -1,6 +1,6 @@
 apiVersion: v2
 name: pvc-exporter
-#description: Provide 2 metrics to monitoring mounted PVC usage.Note: only used for block storage provisioner.
+description: "Provide 2 metrics to monitoring mounted PVC usage.Note: only used for block storage provisioner."
 
 # A chart can be either an 'application' or a 'library' chart.
 #
