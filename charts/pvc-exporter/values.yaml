@@ -4,8 +4,8 @@
 
 namespace: pvc-exporter
 createNamespace: true
-namespaceLabels: { }
-namespaceAnnotations: { }
+namespaceLabels: {}
+namespaceAnnotations: {}
 
 PodPvcMapping:
   image:
@@ -23,13 +23,13 @@ PodPvcMapping:
     ## If PodPvcMapping.service.headless=true, then ignore type
     type: NodePort
     port: 8849
-    labels: { }
-    annotations: { }
+    labels: {}
+    annotations: {}
       # prometheus.io/path: "/"
       # prometheus.io/port: "8849"
       # prometheus.io/scrape: "true"
 
-  env: [ ]
+  env: []
     # - name: APP_HTTP_SERVER_PORT
     #   value: "8849"
     # - name: APP_LOG_FORMAT
@@ -37,7 +37,7 @@ PodPvcMapping:
     # - name: APP_LOG_LEVEL
     #   value: "DEBUG"
 
-  nodeSelector: { }
+  nodeSelector: {}
   tolerations:
     - key: node-role.kubernetes.io/master
       effect: NoSchedule
@@ -64,12 +64,12 @@ PodPvcMapping:
     readOnlyRootFilesystem: true
 
   deployment:
-    labels: { }
-    annotations: { }
+    labels: {}
+    annotations: {}
 
   pod:
-    labels: { }
-    annotations: { }
+    labels: {}
+    annotations: {}
 
 BlockPvcScanner:
   image:
@@ -85,13 +85,13 @@ BlockPvcScanner:
     ## If BlockPvcScanner.service.headless=true, then ignore type
     type: NodePort
     port: 8848
-    labels: { }
-    annotations: { }
+    labels: {}
+    annotations: {}
       # prometheus.io/path: "/"
       # prometheus.io/port: "8848"
       # prometheus.io/scrape: "true"
 
-  env: [ ]
+  env: []
     # - name: APP_HTTP_SERVER_PORT
     #   value: "8849"
     # - name: APP_LOG_FORMAT
@@ -99,7 +99,7 @@ BlockPvcScanner:
     # - name: APP_LOG_LEVEL
     #   value: "DEBUG"
 
-  nodeSelector: { }
+  nodeSelector: {}
   tolerations:
     - key: node-role.kubernetes.io/master
       effect: NoSchedule
@@ -126,29 +126,29 @@ BlockPvcScanner:
     readOnlyRootFilesystem: true
 
   daemonSet:
-    labels: { }
-    annotations: { }
+    labels: {}
+    annotations: {}
 
   pod:
-    labels: { }
-    annotations: { }
+    labels: {}
+    annotations: {}
 
   podmonitor:
     enabled: false
 
 serviceMonitor:
   enabled: true
-  labels: { }
-  annotations: { }
+  labels: {}
+  annotations: {}
 
 clusterRole:
-  labels: { }
-  annotations: { }
+  labels: {}
+  annotations: {}
 
 clusterRoleBinding:
-  labels: { }
-  annotations: { }
+  labels: {}
+  annotations: {}
 
 serviceAccount:
-  labels: { }
-  annotations: { }
+  labels: {}
+  annotations: {}
