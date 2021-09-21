@@ -42,7 +42,7 @@ free_bytes_gauge = Gauge(
 )
 
 supported_pvc_re = re.compile(
-    '^.+(kubernetes.io/flexvolume|kubernetes.io~csi|kubernetes.io/gce-pd/mounts).*$'  # noqa: E501
+    '^.+(kubernetes.io/flexvolume|/kubernetes.io/csi/pv/pvc-|kubernetes.io/gce-pd/mounts).*$'  # noqa: E501
 )
 pvc_re = re.compile('^pvc-[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$')  # noqa: E501
 gke_data_re = re.compile('^gke-data')
