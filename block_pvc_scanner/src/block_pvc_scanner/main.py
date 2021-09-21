@@ -114,7 +114,7 @@ def main():  # pragma: no cover
 
     while 1:
         partitions: list[sdiskpart] = \
-            psutil.disk_partitions()
+            psutil.disk_partitions(all=True)
         mount_points = get_relevant_mount_points(partitions)
         if len(mount_points) == 0:
             logger.info("No mounted PVC found.")
