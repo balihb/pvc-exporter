@@ -6,6 +6,8 @@ import time
 import psutil
 from prometheus_client import start_http_server, Gauge
 from psutil._common import sdiskpart, sdiskusage
+from collections.abc import Callable
+
 
 formatter = logging.Formatter(os.getenv(
     'APP_LOG_FORMAT',
@@ -79,6 +81,10 @@ def mount_point_to_disk_usage(
     return psutil.disk_usage(mount_point)
 
 
+def get_all_partitions() -> list[sdiskpart]:  # pragma: no cover
+    return psutil.disk_partitions(all=True)
+
+
 def update_stats(pvcs_disk_usage: dict[str, sdiskusage]):
     for pvc in pvcs_disk_usage.keys():
         disk_usage = pvcs_disk_usage[pvc]
@@ -99,28 +105,38 @@ def clean_removed_pvcs(old_pvcs: set[str], pvcs: set[str]) -> set[str]:
     return pvcs
 
 
-def process_mount_points(mount_points: set[str]) -> dict[str, sdiskusage]:
+def process_mount_points(
+    mount_points: set[str],
+    get_usage: Callable[[str], sdiskusage] = mount_point_to_disk_usage
+) -> dict[str, sdiskusage]:
     return {
         mount_point_to_pvc(mount_point):
-            mount_point_to_disk_usage(mount_point)
+            get_usage(mount_point)
         for mount_point in mount_points
     }
 
 
-def main():  # pragma: no cover
+def main(
+    argv: list[str],
+    get_partitions: Callable[[], list[sdiskpart]] = get_all_partitions,
+    get_usage: Callable[[str], sdiskusage] = mount_point_to_disk_usage
+):
     start_http_server(os.getenv('APP_HTTP_SERVER_PORT', 8848))
 
     old_pvcs = set[str]()
 
     while 1:
         partitions: list[sdiskpart] = \
-            psutil.disk_partitions(all=True)
+            get_partitions()
         mount_points = get_relevant_mount_points(partitions)
         if len(mount_points) == 0:
             logger.info("No mounted PVC found.")
         else:
             pvcs_disk_usage: dict[str, sdiskusage] =\
-                process_mount_points(mount_points)
+                process_mount_points(
+                    mount_points=mount_points,
+                    get_usage=get_usage
+                )
 
             update_stats(pvcs_disk_usage)
             old_pvcs =\
