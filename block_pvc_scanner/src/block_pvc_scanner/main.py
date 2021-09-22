@@ -117,7 +117,7 @@ def process_mount_points(
 
 
 def main(
-    argv: list[str],
+    argv: list[str] = None,
     get_partitions: Callable[[], list[sdiskpart]] = get_all_partitions,
     get_usage: Callable[[str], sdiskusage] = mount_point_to_disk_usage
 ):
