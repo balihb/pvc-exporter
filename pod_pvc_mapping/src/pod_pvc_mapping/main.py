@@ -11,6 +11,7 @@ from lazy import lazy
 from prometheus_client import start_http_server, Gauge
 
 Volume = namedtuple('Volume', ['vol', 'ns', 'pod'])
+PodsPvcs = namedtuple('PodsPvcs', ['pods', 'pvcs'])
 
 formatter = logging.Formatter(os.getenv(
     'APP_LOG_FORMAT',
@@ -117,6 +118,10 @@ class KubeClient(ABC):
     def list_namespaced_persistent_volume_claim(self, ns: str) -> list[Any]:
         pass
 
+    @abstractmethod
+    def get_single_namespace_data(self, ns: str) -> PodsPvcs:
+        pass
+
 
 class KubeClientImpl(KubeClient):
     @lazy
@@ -133,6 +138,25 @@ class KubeClientImpl(KubeClient):
     def list_namespaced_persistent_volume_claim(self, ns: str) -> list[Any]:
         return get_items(
             self.k8s_api_client.list_namespaced_persistent_volume_claim(ns)
+        )
+
+    def get_single_namespace_data(self, ns: str) -> PodsPvcs:
+        logger.debug(f'ns: {ns}')
+        pods: list[Any] = self.list_namespaced_pod(ns)
+        # logger.debug(pods)
+        pvcs: list[Any] = \
+            self.list_namespaced_persistent_volume_claim(ns)
+        logger.debug('pvcs:')
+        logger.debug(list(map(
+            lambda v: (
+                v['metadata']['name'],
+                v['spec']['volume_name']
+            ),
+            pvcs
+        )))
+        return PodsPvcs(
+            pods=pods,
+            pvcs=pvcs
         )
 
 
@@ -152,22 +176,16 @@ def main(
         nss: list[Any] = kube_client.list_namespace()
         # logger.debug(nss)
         for i in nss:
-            ns = i['metadata']['name']
-            logger.debug(f'ns: {ns}')
-            pods: list[Any] = kube_client.list_namespaced_pod(ns)
-            # logger.debug(pods)
-            pvcs: list[Any] = \
-                kube_client.list_namespaced_persistent_volume_claim(ns)
-            logger.debug('pvcs:')
-            logger.debug(list(map(
-                lambda v: (
-                    v['metadata']['name'],
-                    v['spec']['volume_name']
-                ),
-                pvcs
-            )))
-            if len(pvcs) != 0 and len(pods) != 0:
-                process_pods(pods, pool, pvcs, ns, new_pool_keys)
+            ns: str = i['metadata']['name']
+            pods_pvcs = kube_client.get_single_namespace_data(ns)
+            if len(pods_pvcs.pvcs) != 0 and len(pods_pvcs.pods) != 0:
+                process_pods(
+                    pods_pvcs.pods,
+                    pool,
+                    pods_pvcs.pvcs,
+                    ns,
+                    new_pool_keys
+                )
 
         old_pool_keys = cleanup_pool(
             pool=pool,
