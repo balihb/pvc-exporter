@@ -1,11 +1,13 @@
 import logging
 import os
+from abc import ABC, abstractmethod
 from collections import namedtuple
 from time import sleep
 from typing import Any
 
 from kubernetes import client, config
 from kubernetes.client import CoreV1Api
+from lazy import lazy
 from prometheus_client import start_http_server, Gauge
 
 Volume = namedtuple('Volume', ['vol', 'ns', 'pod'])
@@ -25,12 +27,6 @@ gauge = Gauge(
     'fetching the mapping between pod and pvc',
     ['persistentvolumeclaim', 'volumename', 'mountedby', 'ns']
 )
-
-
-def get_items(obj):
-    obj_dict = obj.to_dict()
-    items = obj_dict['items']
-    return items
 
 
 def process_pods(
@@ -102,29 +98,66 @@ def cleanup_pool(
     return set(pool.keys())
 
 
-def main():
+def get_items(obj):
+    obj_dict = obj.to_dict()
+    items = obj_dict['items']
+    return items
+
+
+class KubeClient(ABC):
+    @abstractmethod
+    def list_namespace(self) -> list[Any]:
+        pass
+
+    @abstractmethod
+    def list_namespaced_pod(self, ns: str) -> list[Any]:
+        pass
+
+    @abstractmethod
+    def list_namespaced_persistent_volume_claim(self, ns: str) -> list[Any]:
+        pass
+
+
+class KubeClientImpl(KubeClient):
+    @lazy
+    def k8s_api_client(self) -> CoreV1Api:
+        config.load_incluster_config()
+        return client.CoreV1Api()
+
+    def list_namespace(self) -> list[Any]:
+        return get_items(self.k8s_api_client.list_namespace())
+
+    def list_namespaced_pod(self, ns: str) -> list[Any]:
+        return get_items(self.k8s_api_client.list_namespaced_pod(ns))
+
+    def list_namespaced_persistent_volume_claim(self, ns: str) -> list[Any]:
+        return get_items(
+            self.k8s_api_client.list_namespaced_persistent_volume_claim(ns)
+        )
+
+
+def main(
+    argv: list[str] = None,
+    kube_client: KubeClient = KubeClientImpl()
+):
     pool: dict[Volume, str] = {}
 
     old_pool_keys: set[Volume] = set[Volume]()
 
     start_http_server(os.getenv('APP_HTTP_SERVER_PORT', 8849))
 
-    config.load_incluster_config()
-    k8s_api: CoreV1Api = client.CoreV1Api()
-
     while 1:
         new_pool_keys: set[Volume] = set[Volume]()
 
-        nss: list[Any] = get_items(k8s_api.list_namespace())
+        nss: list[Any] = kube_client.list_namespace()
         # logger.debug(nss)
         for i in nss:
             ns = i['metadata']['name']
             logger.debug(f'ns: {ns}')
-            pods: list[Any] = get_items(k8s_api.list_namespaced_pod(ns))
+            pods: list[Any] = kube_client.list_namespaced_pod(ns)
             # logger.debug(pods)
-            pvcs: list[Any] = get_items(
-                k8s_api.list_namespaced_persistent_volume_claim(ns)
-            )
+            pvcs: list[Any] = \
+                kube_client.list_namespaced_persistent_volume_claim(ns)
             logger.debug('pvcs:')
             logger.debug(list(map(
                 lambda v: (
@@ -141,5 +174,7 @@ def main():
             old_pool_keys=old_pool_keys,
             new_pool_keys=new_pool_keys
         )
+
+        logger.info(f'PVCs found: {len(pool)}')
 
         sleep(15)
