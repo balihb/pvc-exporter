@@ -19,6 +19,8 @@ print_log = logging.StreamHandler()
 print_log.setFormatter(formatter)
 logger.addHandler(print_log)
 
+psutil.PROCFS_PATH = '/host/'
+
 percent_gauge = Gauge(
     'pvc_usage',
     "fetching pvc usage matched by k8s csi",
