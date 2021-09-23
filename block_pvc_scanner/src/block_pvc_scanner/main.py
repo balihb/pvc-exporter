@@ -2,12 +2,11 @@ import logging
 import os
 import re
 import time
+from collections.abc import Callable
 
 import psutil
 from prometheus_client import start_http_server, Gauge
 from psutil._common import sdiskpart, sdiskusage
-from collections.abc import Callable
-
 
 formatter = logging.Formatter(os.getenv(
     'APP_LOG_FORMAT',
@@ -19,7 +18,7 @@ print_log = logging.StreamHandler()
 print_log.setFormatter(formatter)
 logger.addHandler(print_log)
 
-psutil.PROCFS_PATH = '/host/'
+psutil.PROCFS_PATH = '/host/proc'
 
 percent_gauge = Gauge(
     'pvc_usage',
@@ -134,14 +133,14 @@ def main(
         if len(mount_points) == 0:
             logger.info("No mounted PVC found.")
         else:
-            pvcs_disk_usage: dict[str, sdiskusage] =\
+            pvcs_disk_usage: dict[str, sdiskusage] = \
                 process_mount_points(
                     mount_points=mount_points,
                     get_usage=get_usage
                 )
 
             update_stats(pvcs_disk_usage)
-            old_pvcs =\
+            old_pvcs = \
                 clean_removed_pvcs(old_pvcs, set(pvcs_disk_usage.keys()))
 
         time.sleep(15)
