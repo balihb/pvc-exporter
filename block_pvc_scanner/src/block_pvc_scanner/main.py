@@ -83,7 +83,11 @@ def mount_point_to_disk_usage(
 
 
 def get_all_partitions() -> list[sdiskpart]:  # pragma: no cover
-    return psutil.disk_partitions(all=True)
+    parts = psutil.disk_partitions(all=False)
+    logger.debug(f'num of partitions: {len(parts)}')
+    for part in parts:
+        logger.debug(part.mountpoint)
+    return psutil.disk_partitions(all=False)
 
 
 def update_stats(pvcs_disk_usage: dict[str, sdiskusage]):
