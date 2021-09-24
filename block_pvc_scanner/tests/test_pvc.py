@@ -1,19 +1,6 @@
 import unittest
 
-from psutil._common import sdiskpart
-
 from block_pvc_scanner import main as bps
-
-
-def sdiskpart_factory(mount_point: str) -> sdiskpart:
-    return sdiskpart(
-        mountpoint=mount_point,
-        device='whatever',
-        fstype='no matter',
-        opts='',
-        maxfile='',
-        maxpath=''
-    )
 
 
 class TestPVC(unittest.TestCase):

@@ -2,8 +2,9 @@ xunit-reports
 coverage-reports
 coverage.xml
 
-# Created by https://www.toptal.com/developers/gitignore/api/vim,helm,venv,emacs,python,eclipse,notepadpp,sublimetext,intellij+all,visualstudio,visualstudiocode
-# Edit at https://www.toptal.com/developers/gitignore?templates=vim,helm,venv,emacs,python,eclipse,notepadpp,sublimetext,intellij+all,visualstudio,visualstudiocode
+
+# Created by https://www.toptal.com/developers/gitignore/api/vim,helm,venv,emacs,python,eclipse,notepadpp,sublimetext,intellij+all,visualstudio,visualstudiocode,sonar,sonarqube
+# Edit at https://www.toptal.com/developers/gitignore?templates=vim,helm,venv,emacs,python,eclipse,notepadpp,sublimetext,intellij+all,visualstudio,visualstudiocode,sonar,sonarqube
 
 ### Eclipse ###
 .metadata
@@ -359,6 +360,23 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+### Sonar ###
+#Sonar generated dir
+/.sonar/
+
+### SonarQube ###
+# SonarQube ignore files.
+#
+# https://docs.sonarqube.org/display/SCAN/Analyzing+with+SonarQube+Scanner
+# Sonar Scanner working directories
+.sonar/
+.sonarqube/
+.scannerwork/
+
+# http://www.sonarlint.org/commandline/
+# SonarLint working directories, configuration files (including credentials)
+.sonarlint/
 
 ### SublimeText ###
 # Cache files for Sublime Text
@@ -822,4 +840,4 @@ FodyWeavers.xsd
 ### VisualStudio Patch ###
 # Additional files built by Visual Studio
 
-# End of https://www.toptal.com/developers/gitignore/api/vim,helm,venv,emacs,python,eclipse,notepadpp,sublimetext,intellij+all,visualstudio,visualstudiocode
+# End of https://www.toptal.com/developers/gitignore/api/vim,helm,venv,emacs,python,eclipse,notepadpp,sublimetext,intellij+all,visualstudio,visualstudiocode,sonar,sonarqube
