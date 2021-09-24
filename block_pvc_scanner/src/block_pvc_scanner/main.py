@@ -88,7 +88,7 @@ def get_all_partitions() -> list[sdiskpart]:  # pragma: no cover
     logger.debug(f'num of partitions: {len(parts)}')
     for part in parts:
         logger.debug(part.mountpoint)
-    return psutil.disk_partitions(all=False)
+    return parts
 
 
 def update_stats(pvcs_disk_usage: dict[str, sdiskusage]):
