@@ -25,14 +25,14 @@ class TestPVC(unittest.TestCase):
         self.mount_point_csi_one_none_plugin: str = f"/var/lib/kubelet/pods/aef2f090-0caf-442f-b142-dcddbcf84050/volumes/kubernetes.io~csi/{self.pvc_csi_one}/mount"  # noqa: E501
         self.mount_point_csi_two: str = f"/var/lib/kubelet/plugins/kubernetes.io/csi/pv/{self.pvc_csi_two}/globalmount"  # noqa: E501
         self.mount_point_csi_three: str = f"/var/lib/kubelet/plugins/kubernetes.io/csi/pv/{self.pvc_csi_three}/globalmount"  # noqa: E501
-        self.mount_points: list[sdiskpart] = [
-            sdiskpart_factory("/"),
-            sdiskpart_factory("/dev"),
-            sdiskpart_factory(self.mount_point_csi_one),
-            sdiskpart_factory(self.mount_point_csi_one_none_plugin),
-            sdiskpart_factory(self.mount_point_csi_two),
-            sdiskpart_factory(self.mount_point_csi_three)
-        ]
+        self.mount_points: set[str] = {
+            "/",
+            "/dev",
+            self.mount_point_csi_one,
+            self.mount_point_csi_one_none_plugin,
+            self.mount_point_csi_two,
+            self.mount_point_csi_three
+        }
 
     def test_single_csi(self):
         assert bps.supported_pvc_re.match(self.mount_point_csi_one)
