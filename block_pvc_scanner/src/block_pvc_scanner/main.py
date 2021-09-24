@@ -83,6 +83,7 @@ def mount_point_to_disk_usage(
 
 
 def get_all_partitions() -> list[sdiskpart]:  # pragma: no cover
+    psutil.PROCFS_PATH = '/host/proc'
     parts = psutil.disk_partitions(all=False)
     logger.debug(f'num of partitions: {len(parts)}')
     for part in parts:
