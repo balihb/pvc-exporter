@@ -21,4 +21,7 @@ spec:
       com: {{ $fullName }}-block-pvc-scanner
   podMetricsEndpoints:
     - port: metrics
+      scheme: http
+      path: /
+      interval: 30s
   {{- end }}

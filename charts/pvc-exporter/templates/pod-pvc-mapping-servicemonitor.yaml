@@ -23,5 +23,6 @@ spec:
     targetPort: metrics
     scheme: http
     path: /
+    port: metrics
   jobLabel: app
 {{- end}}
