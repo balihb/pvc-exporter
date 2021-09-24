@@ -47,8 +47,11 @@ jobs:
         id: cache-sonar
         uses: actions/cache@v2
         with:
-          path: .sonar
+          path: .sonar/cache
           key: ${{ runner.os }}-sonar
+      - name: mkdir sonar cache
+        run: |
+          mkdir -p .sonar/cache
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         with:
@@ -58,8 +61,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_USER_HOME: /github/workspace/.sonar
-      - name: chmod sonar cache
-        run: chmod -R 777 .sonar
+      #- name: chmod sonar cache
+      #  run: chmod -R 777 .sonar
 
   python-release:
     runs-on: ubuntu-latest
