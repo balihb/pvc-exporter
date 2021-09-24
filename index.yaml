@@ -2,6 +2,30 @@ apiVersion: v1
 entries:
   pvc-exporter:
   - apiVersion: v2
+    appVersion: 0.1.95
+    created: "2021-09-24T12:41:53.003659039Z"
+    description: 'Provide 2 metrics to monitoring mounted PVC usage. Note: only used
+      for block storage provisioner.'
+    digest: 3eb687ae38a401b29ef3ad6d41db50f8e9b31725fe9f8737a3092d8cd00bf69b
+    home: https://github.com/balihb/pvc-exporter
+    icon: https://raw.githubusercontent.com/balihb/pvc-exporter/omaster/images/icon.gif
+    keywords:
+    - python
+    - kubernetes
+    - monitoring
+    - k8s
+    - helm-chart
+    maintainers:
+    - email: balihb@gmail.com
+      name: balihb
+    name: pvc-exporter
+    sources:
+    - https://github.com/balihb/pvc-exporter
+    type: application
+    urls:
+    - https://github.com/balihb/pvc-exporter/releases/download/pvc-exporter-0.1.95/pvc-exporter-0.1.95.tgz
+    version: 0.1.95
+  - apiVersion: v2
     appVersion: 0.1.94
     created: "2021-09-24T12:20:01.117706599Z"
     description: 'Provide 2 metrics to monitoring mounted PVC usage. Note: only used
@@ -1062,4 +1086,4 @@ entries:
     urls:
     - https://github.com/balihb/pvc-exporter/releases/download/pvc-exporter-0.1.3-omaster.1/pvc-exporter-0.1.3-omaster.1.tgz
     version: 0.1.3-omaster.1
-generated: "2021-09-24T12:20:01.118360308Z"
+generated: "2021-09-24T12:41:53.004415047Z"
