@@ -6,7 +6,7 @@ from collections.abc import Callable
 
 import psutil
 from prometheus_client import start_http_server, Gauge
-from psutil._common import sdiskpart, sdiskusage
+from psutil._common import sdiskusage
 
 formatter = logging.Formatter(os.getenv(
     'APP_LOG_FORMAT',
@@ -51,17 +51,16 @@ pvc_re = re.compile('^pvc-[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}
 gke_data_re = re.compile('^gke-data')
 
 
-def filter_supported_pvcs(partition: sdiskpart) -> bool:
-    if supported_pvc_re.match(partition.mountpoint):
+def filter_supported_pvcs(mount_point: str) -> bool:
+    if supported_pvc_re.match(mount_point):
         return True
     return False
 
 
-def get_relevant_mount_points(partitions: list[sdiskpart]) -> set[str]:
-    return set(map(
-        lambda p: p.mountpoint, filter(
-            filter_supported_pvcs, partitions
-        )))
+def get_relevant_mount_points(partitions: set[str]) -> set[str]:
+    return set(filter(
+        filter_supported_pvcs, partitions
+    ))
 
 
 def mount_point_to_pvc(mount_point: str) -> str:
@@ -82,13 +81,24 @@ def mount_point_to_disk_usage(
     return psutil.disk_usage(mount_point)
 
 
-def get_all_partitions() -> list[sdiskpart]:  # pragma: no cover
+def get_all_partitions() -> set[str]:  # pragma: no cover
     psutil.PROCFS_PATH = '/host/proc'
     parts = psutil.disk_partitions(all=False)
     logger.debug(f'num of partitions: {len(parts)}')
     for part in parts:
         logger.debug(part.mountpoint)
-    return parts
+    return set(map(
+        lambda p: p.mountpoint,
+        parts
+    ))
+
+
+def get_all_partitions_proc_mounts() -> set[str]:  # pragma: no cover
+    mounts_file = open('/host/proc/mounts')
+    return set(map(
+        lambda l: l.split(' ')[1],
+        mounts_file.readlines()
+    ))
 
 
 def update_stats(pvcs_disk_usage: dict[str, sdiskusage]):
@@ -124,7 +134,7 @@ def process_mount_points(
 
 def main(
     argv: list[str] = None,
-    get_partitions: Callable[[], list[sdiskpart]] = get_all_partitions,
+    get_partitions: Callable[[], set[str]] = get_all_partitions_proc_mounts,
     get_usage: Callable[[str], sdiskusage] = mount_point_to_disk_usage
 ):
     start_http_server(os.getenv('APP_HTTP_SERVER_PORT', 8848))
@@ -132,9 +142,9 @@ def main(
     old_pvcs = set[str]()
 
     while 1:
-        partitions: list[sdiskpart] = \
+        partitions: set[str] = \
             get_partitions()
-        mount_points = get_relevant_mount_points(partitions)
+        mount_points: set[str] = get_relevant_mount_points(partitions)
         if len(mount_points) == 0:
             logger.info("No mounted PVC found.")
         else:
