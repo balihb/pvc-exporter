@@ -47,7 +47,7 @@ jobs:
         id: cache-sonar
         uses: actions/cache@v2
         with:
-          path: ${{ env.GITHUB_WORKSPACE }}/.sonar
+          path: .sonar
           key: ${{ runner.os }}-sonar
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
