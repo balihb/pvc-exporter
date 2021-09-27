@@ -94,7 +94,7 @@ def get_all_partitions() -> set[str]:  # pragma: no cover
 
 
 def get_all_partitions_proc_mounts() -> set[str]:  # pragma: no cover
-    mounts_file = open('/host/proc/mounts')
+    mounts_file = open('/host/proc/1/mounts')
     return set(map(
         lambda l: l.split(' ')[1],
         mounts_file.readlines()
