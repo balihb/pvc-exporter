@@ -46,13 +46,13 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: {{ $fullName }}-sa
-  namespace: {{.Values.namespace}}
+  namespace: {{ .Release.Namespace | default .Values.namespace }}
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: {{ $fullName }}-sa
-  namespace: {{.Values.namespace}}
+  namespace: {{ .Release.Namespace | default .Values.namespace }}
   {{- with .Values.serviceAccount.annotations }}
   annotations:
   {{- toYaml . | nindent 4 }}
