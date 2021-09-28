@@ -94,6 +94,9 @@ jobs:
       - test
     steps:
       - uses: actions/checkout@v2
+      - uses: hadolint/hadolint-action@v1.6.0
+        with:
+          dockerfile: ./block_pvc_scanner/Dockerfile
       - name: VERSION file block-pvc-scanner
         run: |
           echo "__version__ = '${{ needs.version.outputs.semVer }}'" > block_pvc_scanner/src/block_pvc_scanner/_version.py
@@ -144,6 +147,9 @@ jobs:
       - test
     steps:
       - uses: actions/checkout@v2
+      - uses: hadolint/hadolint-action@v1.6.0
+        with:
+          dockerfile: ./pod_pvc_mapping/Dockerfile
       - name: VERSION file pod-pvc-mapping
         run: |
           echo "__version__ = '${{ needs.version.outputs.semVer }}'" > pod_pvc_mapping/src/pod_pvc_mapping/_version.py
