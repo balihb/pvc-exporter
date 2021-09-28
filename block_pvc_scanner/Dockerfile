@@ -1,7 +1,7 @@
 ARG base_image_version=3.9.7-alpine3.14
 FROM python:${base_image_version} as builder
 
-RUN apk update && apk add gcc libc-dev linux-headers
+RUN apk add --no-cache gcc libc-dev linux-headers && rm -rf "/var/cache/apk/*"
 
 # setup build venv
 ENV VIRTUAL_ENV=/opt/build-venv
@@ -13,8 +13,10 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 RUN python3 -m pip install --no-cache-dir --upgrade pip setuptools wheel build
 
 # build
-COPY . ./src
-RUN cd src && python3 -m build --wheel
+COPY . /src
+WORKDIR /src
+RUN python3 -m build --wheel
+WORKDIR /
 
 # setup runtime venv
 ENV VIRTUAL_ENV=/opt/venv
@@ -23,7 +25,9 @@ RUN python3 -m venv --system-site-packages $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$OLD_PATH"
 
 # install package
-RUN cd src && pip install --no-cache-dir --disable-pip-version-check --use-feature=in-tree-build ./dist/*.whl
+WORKDIR /src
+RUN pip install --no-cache-dir --disable-pip-version-check --use-feature=in-tree-build ./dist/*.whl
+WORKDIR /
 
 # remove build tools
 RUN python3 -m pip uninstall -y setuptools wheel pip
@@ -38,4 +42,4 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 ENV PYTHONUNBUFFERED=1
 
-CMD 'block-pvc-scanner'
+CMD ["block-pvc-scanner"]
