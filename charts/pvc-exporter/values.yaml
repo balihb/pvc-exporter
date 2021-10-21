@@ -154,3 +154,6 @@ clusterRoleBinding:
 serviceAccount:
   labels: {}
   annotations: {}
+
+defaultDashboard:
+  enabled: true
