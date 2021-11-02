@@ -1,16 +1,20 @@
 {{- if .Values.defaultDashboard.enabled }}
+  {{- $fullName := include "pvc-exporter.fullname" . -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: kube-prometheus-stack-pvc-usage
-  namespace: k8s-cluster-base-monitoring
+  name: {{ $fullName }}-pvc-usage
+  namespace: {{ .Release.Namespace | default .Values.namespace }}
   labels:
     grafana_dashboard: "1"
-    release: kube-prometheus-stack
-    app: kube-prometheus-stack-grafana
-    app.kubernetes.io/instance: kube-prometheus-stack
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/part-of: kube-prometheus-stack
+    app: {{ $fullName }}
+  {{- with .Values.defaultDashboard.labels }}
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.defaultDashboard.annotations }}
+  annotations:
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
 data:
   pvc-usage.json: |-
     {
@@ -116,7 +120,7 @@ data:
               "expr": "label_join(predict_linear(((sum without (pod,service,namespace,job,instance,endpoint) (pvc_usage)) + on(volumename) group_left(persistentvolumeclaim,mountedby,ns)pvc_mapping*0)[6h:],  24 * 60 * 60) ,\"pod_pvc\",\" : \",\"ns\",\"mountedby\",\"persistentvolumeclaim\")",
               "format": "time_series",
               "interval": "",
-              "legendFormat": "{{"{{"}}pod_pvc{{"}}"}}",
+              "legendFormat": "{{`{{ pod_pvc }}`}}",
               "refId": "A"
             }
           ],
@@ -168,7 +172,7 @@ data:
               "exemplar": true,
               "expr": "label_join((sum without (pod,service,namespace,job,instance,endpoint) (pvc_usage_used_bytes)) + on(volumename) group_left(persistentvolumeclaim,mountedby,ns)pvc_mapping*0,\"pod_pvc\",\" : \",\"ns\",\"mountedby\",\"persistentvolumeclaim\")",
               "interval": "",
-              "legendFormat": "{{"{{"}}pod_pvc{{"}}"}}",
+              "legendFormat": "{{`{{ pod_pvc{ }}`}}",
               "refId": "A"
             }
           ],
@@ -338,4 +342,4 @@ data:
       "uid": "7YOYYp-Mz",
       "version": 1
     }
-  {{- end }}
+    {{- end }}

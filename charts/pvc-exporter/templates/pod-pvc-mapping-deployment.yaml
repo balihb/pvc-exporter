@@ -8,11 +8,11 @@ metadata:
     app: {{ $fullName }}
     com: {{ $fullName }}-pod-pvc-mapping
     {{- with .Values.PodPvcMapping.deployment.labels }}
-    {{- toYaml . | nindent 4 }}
-    {{- end }}
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
   {{- with .Values.PodPvcMapping.deployment.annotations }}
   annotations:
-    {{- toYaml . | nindent 4 }}
+  {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
   replicas: {{ .Values.PodPvcMapping.replicaCount }}
@@ -28,47 +28,47 @@ spec:
         app: {{ $fullName }}
         com: {{ $fullName }}-pod-pvc-mapping
         {{- with .Values.PodPvcMapping.pod.labels }}
-        {{- toYaml . | nindent 8 }}
-        {{- end }}
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
       {{- with .Values.PodPvcMapping.pod.annotations }}
       annotations:
-        {{- toYaml . | nindent 8 }}
+    {{- toYaml . | nindent 8 }}
     {{- end }}
     spec:
       imagePullSecrets:
-        {{- toYaml .Values.PodPvcMapping.image.pullSecrets | nindent 8 }}
+      {{- toYaml .Values.PodPvcMapping.image.pullSecrets | nindent 8 }}
       {{- with .Values.PodPvcMapping.nodeSelector }}
       nodeSelector:
-        {{- toYaml . | nindent 8 }}
+      {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- with .Values.PodPvcMapping.tolerations }}
       tolerations:
       {{- toYaml . | nindent 6 }}
       {{- end }}
       containers:
-      - name: pod-pvc-mapping
-        {{- with .Values.PodPvcMapping.image }}
-        image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag | default $.Chart.AppVersion }}{{ end }}"
-        imagePullPolicy: {{ .pullPolicy }}
-        {{- end }}
-        ports:
-        - containerPort: {{.Values.PodPvcMapping.containerPort}}
-          name: metrics
-          protocol: TCP
-        {{- with .Values.PodPvcMapping.env }}
-        env:
-        {{- toYaml . | nindent 10 }}
-        {{- end }}
-        {{- with .Values.PodPvcMapping.resources }}
-        resources:
-        {{- toYaml . | nindent 10 }}
-        {{- end }}
-        {{- with .Values.PodPvcMapping.livenessProbe }}
-        livenessProbe:
-        {{- toYaml . | nindent 10 }}
-        {{- end }}
-        {{- with .Values.PodPvcMapping.securityContext }}
-        securityContext:
+        - name: pod-pvc-mapping
+          {{- with .Values.PodPvcMapping.image }}
+          image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag | default $.Chart.AppVersion }}{{ end }}"
+          imagePullPolicy: {{ .pullPolicy }}
+          {{- end }}
+          ports:
+            - containerPort: {{.Values.PodPvcMapping.containerPort}}
+              name: metrics
+              protocol: TCP
+          {{- with .Values.PodPvcMapping.env }}
+          env:
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+          {{- with .Values.PodPvcMapping.resources }}
+          resources:
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+          {{- with .Values.PodPvcMapping.livenessProbe }}
+          livenessProbe:
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+          {{- with .Values.PodPvcMapping.securityContext }}
+          securityContext:
       {{- toYaml . | nindent 10 }}
       {{- end }}
       serviceAccountName: {{ $fullName }}-sa

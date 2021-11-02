@@ -4,6 +4,7 @@ from block_pvc_scanner import main as bps
 
 
 class TestPVC(unittest.TestCase):
+
     def setUp(self) -> None:
         self.pvc_csi_one: str = "pvc-2f0c4198-821b-4629-ab8f-59a993e3cd00"
         self.pvc_csi_two: str = "pvc-8311ea3b-d777-4b81-ac47-cc51f7cc8f39"
@@ -25,9 +26,7 @@ class TestPVC(unittest.TestCase):
         assert bps.supported_pvc_re.match(self.mount_point_csi_one)
 
     def test_pvc(self):
-        assert bps.mount_point_to_pvc(
-            self.mount_point_csi_one
-        ) == self.pvc_csi_one
+        assert bps.mount_point_to_pvc(self.mount_point_csi_one) == self.pvc_csi_one
 
     def test_relevant_mount_points(self):
         assert len(bps.get_relevant_mount_points(self.mount_points)) == 3

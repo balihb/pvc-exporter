@@ -6,20 +6,20 @@ metadata:
     app: {{ $fullName }}
     com: {{ $fullName }}-pod-pvc-mapping
     {{- with .Values.PodPvcMapping.service.labels }}
-    {{- toYaml . | nindent 4 }}
-    {{- end }}
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
   {{- with .Values.PodPvcMapping.service.annotations }}
   annotations:
-    {{- toYaml . | nindent 4 }}
+  {{- toYaml . | nindent 4 }}
   {{- end }}
   name: {{ $fullName }}-pod-pvc-mapping
   namespace: {{ .Release.Namespace | default .Values.namespace }}
 spec:
   ports:
-  - port: {{.Values.PodPvcMapping.service.port}}
-    name: metrics
-    protocol: TCP
-    targetPort: {{.Values.PodPvcMapping.containerPort}}
+    - port: {{.Values.PodPvcMapping.service.port}}
+      name: metrics
+      protocol: TCP
+      targetPort: {{.Values.PodPvcMapping.containerPort}}
   selector:
     app: {{ $fullName }}
     com: {{ $fullName }}-pod-pvc-mapping

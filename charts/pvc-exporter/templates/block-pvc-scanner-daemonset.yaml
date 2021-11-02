@@ -8,11 +8,11 @@ metadata:
     app: {{ $fullName }}
     com: {{ $fullName }}-block-pvc-scanner
     {{- with .Values.BlockPvcScanner.daemonSet.labels }}
-    {{- toYaml . | nindent 4 }}
-    {{- end }}
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
   {{- with .Values.BlockPvcScanner.daemonSet.annotations }}
   annotations:
-    {{- toYaml . | nindent 4 }}
+  {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
   selector:
@@ -25,60 +25,60 @@ spec:
         app: {{ $fullName }}
         com: {{ $fullName }}-block-pvc-scanner
         {{- with .Values.BlockPvcScanner.pod.labels }}
-        {{- toYaml . | nindent 8 }}
-        {{- end }}
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
       {{- with .Values.BlockPvcScanner.pod.annotations }}
       annotations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+    {{- toYaml . | nindent 8 }}
+    {{- end }}
     spec:
       imagePullSecrets:
-        {{- toYaml .Values.BlockPvcScanner.image.pullSecrets | nindent 8 }}
+      {{- toYaml .Values.BlockPvcScanner.image.pullSecrets | nindent 8 }}
       {{- with .Values.BlockPvcScanner.nodeSelector }}
       nodeSelector:
-        {{- toYaml . | nindent 8 }}
+      {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- with .Values.BlockPvcScanner.tolerations }}
       tolerations:
       {{- toYaml . | nindent 6 }}
       {{- end }}
       containers:
-      - name: block-pvc-scanner
-        {{- with .Values.BlockPvcScanner.image }}
-        image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag | default $.Chart.AppVersion }}{{ end }}"
-        imagePullPolicy: {{ .pullPolicy }}
-        {{- end }}
-        ports:
-        - containerPort: {{.Values.BlockPvcScanner.containerPort}}
-          name: metrics
-          protocol: TCP
-        {{- with .Values.BlockPvcScanner.resources }}
-        resources:
-        {{- toYaml . | nindent 12 }}
-        {{- end }}
-        volumeMounts:
-        - name: root-path
-          mountPath: /host
-          readOnly: true
-        - name: host-kubelet
-          mountPath: /var/lib/kubelet
-          readOnly: true
-        {{- with .Values.BlockPvcScanner.livenessProbe }}
-        livenessProbe:
-        {{- toYaml . | nindent 12 }}
-        {{- end }}
-        {{- with .Values.BlockPvcScanner.securityContext }}
-        securityContext:
-        {{- toYaml . | nindent 12 }}
-        {{- end }}
-        {{- with .Values.BlockPvcScanner.env }}
-        env:
+        - name: block-pvc-scanner
+          {{- with .Values.BlockPvcScanner.image }}
+          image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag | default $.Chart.AppVersion }}{{ end }}"
+          imagePullPolicy: {{ .pullPolicy }}
+          {{- end }}
+          ports:
+            - containerPort: {{.Values.BlockPvcScanner.containerPort}}
+              name: metrics
+              protocol: TCP
+          {{- with .Values.BlockPvcScanner.resources }}
+          resources:
+          {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: root-path
+              mountPath: /host
+              readOnly: true
+            - name: host-kubelet
+              mountPath: /var/lib/kubelet
+              readOnly: true
+          {{- with .Values.BlockPvcScanner.livenessProbe }}
+          livenessProbe:
+          {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.BlockPvcScanner.securityContext }}
+          securityContext:
+          {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.BlockPvcScanner.env }}
+          env:
       {{- toYaml . | nindent 10 }}
       {{- end }}
       volumes:
-      - name: root-path
-        hostPath:
-          path: /
-      - name: host-kubelet
-        hostPath:
-          path: /var/lib/kubelet
+        - name: root-path
+          hostPath:
+            path: /
+        - name: host-kubelet
+          hostPath:
+            path: /var/lib/kubelet

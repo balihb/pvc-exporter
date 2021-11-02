@@ -12,20 +12,20 @@ metadata:
   {{- toYaml . | nindent 4 }}
   {{- end }}
 rules:
-- apiGroups:
-  - '*'
-  resources:
-  - '*'
-  verbs:
-  - 'get'
-  - 'list'
-  - 'watch'
-- nonResourceURLs:
-  - '*'
-  verbs:
-  - 'get'
-  - 'list'
-  - 'watch'
+  - apiGroups:
+      - '*'
+    resources:
+      - '*'
+    verbs:
+      - 'get'
+      - 'list'
+      - 'watch'
+  - nonResourceURLs:
+      - '*'
+    verbs:
+      - 'get'
+      - 'list'
+      - 'watch'
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -44,9 +44,9 @@ roleRef:
   kind: ClusterRole
   name: {{ $fullName }}-cr
 subjects:
-- kind: ServiceAccount
-  name: {{ $fullName }}-sa
-  namespace: {{ .Release.Namespace | default .Values.namespace }}
+  - kind: ServiceAccount
+    name: {{ $fullName }}-sa
+    namespace: {{ .Release.Namespace | default .Values.namespace }}
 ---
 apiVersion: v1
 kind: ServiceAccount

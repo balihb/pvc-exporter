@@ -1,27 +1,28 @@
 {{- $fullName := include "pvc-exporter.fullname" . -}}
-  {{- if .Values.BlockPvcScanner.podMonitor.enabled }}
+  {{- if .Values.BlockPvcScanner.serviceMonitor.enabled }}
 apiVersion: monitoring.coreos.com/v1
-kind: PodMonitor
+kind: ServiceMonitor
 metadata:
   labels:
     app: {{ $fullName }}
-  {{- with .Values.BlockPvcScanner.podMonitor.labels }}
+  {{- with .Values.BlockPvcScanner.serviceMonitor.labels }}
   {{- toYaml . | nindent 4 }}
   {{- end }}
-  {{- with .Values.BlockPvcScanner.podMonitor.annotations }}
+  {{- with .Values.BlockPvcScanner.serviceMonitor.annotations }}
   annotations:
   {{- toYaml . | nindent 4 }}
   {{- end }}
   name: {{ $fullName }}
   namespace: {{ .Release.Namespace | default .Values.namespace }}
 spec:
-  jobLabel: app
   selector:
     matchLabels:
       com: {{ $fullName }}-block-pvc-scanner
-  podMetricsEndpoints:
-    - port: metrics
+  endpoints:
+    - interval: 30s
+      targetPort: metrics
       scheme: http
       path: /
-      interval: 30s
-  {{- end }}
+      port: metrics
+  jobLabel: app
+  {{- end}}

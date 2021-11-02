@@ -5,10 +5,10 @@ metadata:
   name: {{ .Release.Namespace | default .Values.namespace }}
   {{- with .Values.namespaceAnnotations }}
   annotations:
-    {{- toYaml . | nindent 4 }}
+  {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- with .Values.namespaceLabels }}
   labels:
-    {{- toYaml . | nindent 4 }}
+  {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- end }}

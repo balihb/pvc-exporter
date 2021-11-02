@@ -16,9 +16,14 @@ repos:
       - id: check-xml
       - id: check-toml
   - repo: https://github.com/pycqa/flake8
-    rev: '3.9.2'
+    rev: '4.0.1'
     hooks:
       - id: flake8
+  - repo: https://github.com/gruntwork-io/pre-commit
+    rev: v0.1.17 # Get the latest from: https://github.com/gruntwork-io/pre-commit/releases
+    hooks:
+      - id: helmlint
+      # - id: yapf
   - repo: https://github.com/editorconfig-checker/editorconfig-checker.python
     rev: '2.3.54'
     hooks:

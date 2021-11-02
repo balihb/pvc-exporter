@@ -8,10 +8,7 @@ import psutil
 from prometheus_client import start_http_server, Gauge
 from psutil._common import sdiskusage
 
-formatter = logging.Formatter(os.getenv(
-    'APP_LOG_FORMAT',
-    '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-))
+formatter = logging.Formatter(os.getenv('APP_LOG_FORMAT', '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
 logger = logging.getLogger(__name__)
 logger.setLevel(os.getenv('APP_LOG_LEVEL', logging.INFO))
 print_log = logging.StreamHandler()
@@ -20,29 +17,13 @@ logger.addHandler(print_log)
 
 psutil.PROCFS_PATH = '/host/proc'
 
-percent_gauge = Gauge(
-    'pvc_usage',
-    "fetching pvc usage matched by k8s csi",
-    ['volumename']
-)
+percent_gauge = Gauge('pvc_usage', "fetching pvc usage matched by k8s csi", ['volumename'])
 
-total_bytes_gauge = Gauge(
-    'pvc_usage_total_bytes',
-    "PVC total bytes",
-    ['volumename']
-)
+total_bytes_gauge = Gauge('pvc_usage_total_bytes', "PVC total bytes", ['volumename'])
 
-used_bytes_gauge = Gauge(
-    'pvc_usage_used_bytes',
-    "PVC used bytes",
-    ['volumename']
-)
+used_bytes_gauge = Gauge('pvc_usage_used_bytes', "PVC used bytes", ['volumename'])
 
-free_bytes_gauge = Gauge(
-    'pvc_usage_free_bytes',
-    "PVC free bytes",
-    ['volumename']
-)
+free_bytes_gauge = Gauge('pvc_usage_free_bytes', "PVC free bytes", ['volumename'])
 
 supported_pvc_re = re.compile(
     '^.+(kubernetes.io/flexvolume|/kubernetes.io/csi/pv/pvc-|kubernetes.io/gce-pd/mounts).*$'  # noqa: E501
@@ -58,9 +39,7 @@ def filter_supported_pvcs(mount_point: str) -> bool:
 
 
 def get_relevant_mount_points(partitions: set[str]) -> set[str]:
-    return set(filter(
-        filter_supported_pvcs, partitions
-    ))
+    return set(filter(filter_supported_pvcs, partitions))
 
 
 def mount_point_to_pvc(mount_point: str) -> str:
@@ -75,9 +54,7 @@ def mount_point_to_pvc(mount_point: str) -> str:
     return pvc
 
 
-def mount_point_to_disk_usage(
-    mount_point: str
-) -> sdiskusage:  # pragma: no cover
+def mount_point_to_disk_usage(mount_point: str) -> sdiskusage:  # pragma: no cover
     return psutil.disk_usage(mount_point)
 
 
@@ -87,18 +64,12 @@ def get_all_partitions() -> set[str]:  # pragma: no cover
     logger.debug(f'num of partitions: {len(parts)}')
     for part in parts:
         logger.debug(part.mountpoint)
-    return set(map(
-        lambda p: p.mountpoint,
-        parts
-    ))
+    return set(map(lambda p: p.mountpoint, parts))
 
 
 def get_all_partitions_proc_mounts() -> set[str]:  # pragma: no cover
     mounts_file = open('/host/proc/1/mounts')
-    return set(map(
-        lambda l: l.split(' ')[1],
-        mounts_file.readlines()
-    ))
+    return set(map(lambda l: l.split(' ')[1], mounts_file.readlines()))
 
 
 def update_stats(pvcs_disk_usage: dict[str, sdiskusage]):
@@ -125,11 +96,7 @@ def process_mount_points(
     mount_points: set[str],
     get_usage: Callable[[str], sdiskusage] = mount_point_to_disk_usage
 ) -> dict[str, sdiskusage]:
-    return {
-        mount_point_to_pvc(mount_point):
-            get_usage(mount_point)
-        for mount_point in mount_points
-    }
+    return {mount_point_to_pvc(mount_point): get_usage(mount_point) for mount_point in mount_points}
 
 
 def main(
