@@ -99,6 +99,27 @@ def process_mount_points(
     return {mount_point_to_pvc(mount_point): get_usage(mount_point) for mount_point in mount_points}
 
 
+def main_loop(
+    old_pvcs: set[str],
+    get_partitions: Callable[[], set[str]] = get_all_partitions_proc_mounts,
+    get_usage: Callable[[str], sdiskusage] = mount_point_to_disk_usage,
+):
+    partitions: set[str] = \
+        get_partitions()
+    mount_points: set[str] = get_relevant_mount_points(partitions)
+    if len(mount_points) == 0:
+        logger.info("No mounted PVC found.")
+    else:
+        pvcs_disk_usage: dict[str, sdiskusage] = \
+            process_mount_points(
+                mount_points=mount_points,
+                get_usage=get_usage
+            )
+
+        update_stats(pvcs_disk_usage)
+        return clean_removed_pvcs(old_pvcs, set(pvcs_disk_usage.keys()))
+
+
 def main(
     argv: list[str] = None,
     get_partitions: Callable[[], set[str]] = get_all_partitions_proc_mounts,
@@ -109,20 +130,10 @@ def main(
     old_pvcs = set[str]()
 
     while 1:
-        partitions: set[str] = \
-            get_partitions()
-        mount_points: set[str] = get_relevant_mount_points(partitions)
-        if len(mount_points) == 0:
-            logger.info("No mounted PVC found.")
-        else:
-            pvcs_disk_usage: dict[str, sdiskusage] = \
-                process_mount_points(
-                    mount_points=mount_points,
-                    get_usage=get_usage
-                )
-
-            update_stats(pvcs_disk_usage)
-            old_pvcs = \
-                clean_removed_pvcs(old_pvcs, set(pvcs_disk_usage.keys()))
+        old_pvcs = main_loop(
+            old_pvcs=old_pvcs,
+            get_partitions=get_partitions,
+            get_usage=get_usage
+        )
 
         time.sleep(15)

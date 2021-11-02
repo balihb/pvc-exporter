@@ -4,8 +4,8 @@
 
 namespace: pvc-exporter
 createNamespace: true
-namespaceLabels: { }
-namespaceAnnotations: { }
+namespaceLabels: {}
+namespaceAnnotations: {}
 
 PodPvcMapping:
   image:
@@ -23,7 +23,7 @@ PodPvcMapping:
     ## If PodPvcMapping.service.headless=true, then ignore type
     type: NodePort
     port: 8849
-    labels: { }
+    labels: {}
     annotations: {
       # prometheus.io/path: "/"
       # prometheus.io/port: "8849"
@@ -39,7 +39,7 @@ PodPvcMapping:
     #   value: "DEBUG"
   ]
 
-  nodeSelector: { }
+  nodeSelector: {}
   tolerations:
     - key: node-role.kubernetes.io/master
       effect: NoSchedule
@@ -66,22 +66,22 @@ PodPvcMapping:
     readOnlyRootFilesystem: true
 
   deployment:
-    labels: { }
-    annotations: { }
+    labels: {}
+    annotations: {}
 
   pod:
-    labels: { }
-    annotations: { }
+    labels: {}
+    annotations: {}
 
   podMonitor:
     enabled: false
-    labels: { }
-    annotations: { }
+    labels: {}
+    annotations: {}
 
   serviceMonitor:
     enabled: false
-    labels: { }
-    annotations: { }
+    labels: {}
+    annotations: {}
 
 BlockPvcScanner:
   image:
@@ -97,7 +97,7 @@ BlockPvcScanner:
     ## If BlockPvcScanner.service.headless=true, then ignore type
     type: NodePort
     port: 8848
-    labels: { }
+    labels: {}
     annotations: {
       # prometheus.io/path: "/"
       # prometheus.io/port: "8848"
@@ -113,7 +113,7 @@ BlockPvcScanner:
     #   value: "DEBUG"
   ]
 
-  nodeSelector: { }
+  nodeSelector: {}
   tolerations:
     - key: node-role.kubernetes.io/master
       effect: NoSchedule
@@ -140,36 +140,36 @@ BlockPvcScanner:
     readOnlyRootFilesystem: true
 
   daemonSet:
-    labels: { }
-    annotations: { }
+    labels: {}
+    annotations: {}
 
   pod:
-    labels: { }
-    annotations: { }
+    labels: {}
+    annotations: {}
 
   podMonitor:
     enabled: false
-    labels: { }
-    annotations: { }
+    labels: {}
+    annotations: {}
 
   serviceMonitor:
     enabled: false
-    labels: { }
-    annotations: { }
+    labels: {}
+    annotations: {}
 
 clusterRole:
-  labels: { }
-  annotations: { }
+  labels: {}
+  annotations: {}
 
 clusterRoleBinding:
-  labels: { }
-  annotations: { }
+  labels: {}
+  annotations: {}
 
 serviceAccount:
-  labels: { }
-  annotations: { }
+  labels: {}
+  annotations: {}
 
 defaultDashboard:
   enabled: false
-  labels: { }
-  annotations: { }
+  labels: {}
+  annotations: {}
