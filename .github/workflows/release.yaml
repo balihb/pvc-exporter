@@ -36,13 +36,23 @@ jobs:
       - uses: pre-commit/action@v2.0.3
       - name: Install tox
         run: pip install tox
-      - name: TOX
+
+      - name: TOX-bps
         working-directory: block_pvc_scanner
         run: tox
-      - name: fix code coverage paths
+      - name: fix code coverage paths - bps
         working-directory: block_pvc_scanner
         run: |
           sed -i 's@'$GITHUB_WORKSPACE'@/github/workspace/@g' coverage-reports/coverage.xml
+
+      - name: TOX-ppm
+        working-directory: pod_pvc_mapping
+        run: tox
+      - name: fix code coverage paths - ppm
+        working-directory: pod_pvc_mapping
+        run: |
+          sed -i 's@'$GITHUB_WORKSPACE'@/github/workspace/@g' coverage-reports/coverage.xml
+
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         with:
