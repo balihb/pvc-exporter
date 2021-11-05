@@ -1,5 +1,5 @@
-{{- $fullName := include "pvc-exporter.fullname" . -}}
-  {{- if .Values.BlockPvcScanner.service.enabled }}
+{{- if and (.Values.BlockPvcScanner.enabled) (.Values.BlockPvcScanner.service.enabled) }}
+  {{- $fullName := include "pvc-exporter.fullname" . -}}
 apiVersion: v1
 kind: Service
 metadata:

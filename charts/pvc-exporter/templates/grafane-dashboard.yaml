@@ -1,4 +1,4 @@
-{{- if .Values.defaultDashboard.enabled }}
+{{- if and (.Values.BlockPvcScanner.enabled) (.Values.defaultDashboard.enabled) }}
   {{- $fullName := include "pvc-exporter.fullname" . -}}
 apiVersion: v1
 kind: ConfigMap

@@ -1,5 +1,5 @@
 {{- $fullName := include "pvc-exporter.fullname" . -}}
-  {{- if .Values.BlockPvcScanner.podMonitor.enabled }}
+  {{- if and (.Values.BlockPvcScanner.enabled) (.Values.BlockPvcScanner.podMonitor.enabled) }}
 apiVersion: monitoring.coreos.com/v1
 kind: PodMonitor
 metadata:

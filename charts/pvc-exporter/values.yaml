@@ -83,6 +83,8 @@ PodPvcMapping:
     annotations: {}
 
 BlockPvcScanner:
+  enabled: true
+
   image:
     repository: balihb/block-pvc-scanner
     tag: ""

@@ -1,5 +1,5 @@
-{{- $fullName := include "pvc-exporter.fullname" . -}}
-  {{- if .Values.BlockPvcScanner.serviceMonitor.enabled }}
+{{- if and (.Values.BlockPvcScanner.enabled) (.Values.BlockPvcScanner.serviceMonitor.enabled) }}
+  {{- $fullName := include "pvc-exporter.fullname" . -}}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:

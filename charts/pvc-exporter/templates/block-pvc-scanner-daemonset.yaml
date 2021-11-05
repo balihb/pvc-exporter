@@ -1,4 +1,5 @@
 {{- $fullName := include "pvc-exporter.fullname" . -}}
+  {{- if .Values.BlockPvcScanner.enabled }}
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -83,3 +84,4 @@ spec:
         - name: host-kubelet
           hostPath:
             path: /var/lib/kubelet
+  {{- end }}
