@@ -1,6 +1,6 @@
-import sys
+import sys  # pragma: no cover
 
-from .main import main
+from .main import main  # pragma: no cover
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     main(sys.argv[1:])

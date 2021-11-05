@@ -70,7 +70,7 @@ def process_pods(
                     pool=pool,
                     new_pool_keys=new_pool_keys
                 )
-        except TypeError:
+        except TypeError:  # pragma: no cover
             pass
 
 
@@ -100,15 +100,15 @@ def cleanup_pool(pool: dict[Volume, str], old_pool_keys: set[Volume], new_pool_k
 class KubeClient(ABC):
 
     @abstractmethod
-    def list_namespace(self) -> list[V1Namespace]:
+    def list_namespace(self) -> list[V1Namespace]:  # pragma: no cover
         pass
 
     @abstractmethod
-    def list_namespaced_pod(self, ns: str) -> list[V1Pod]:
+    def list_namespaced_pod(self, ns: str) -> list[V1Pod]:  # pragma: no cover
         pass
 
     @abstractmethod
-    def list_namespaced_persistent_volume_claim(self, ns: str) -> list[V1PersistentVolumeClaim]:
+    def list_namespaced_persistent_volume_claim(self, ns: str) -> list[V1PersistentVolumeClaim]:  # pragma: no cover
         pass
 
     def get_single_namespace_data(self, ns: str) -> PodsPvcs:

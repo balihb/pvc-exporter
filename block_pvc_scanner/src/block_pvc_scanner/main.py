@@ -124,7 +124,7 @@ def main(
     argv: list[str] = None,
     get_partitions: Callable[[], set[str]] = get_all_partitions_proc_mounts,
     get_usage: Callable[[str], sdiskusage] = mount_point_to_disk_usage
-):
+):  # pragma: no cover
     start_http_server(os.getenv('APP_HTTP_SERVER_PORT', 8848))
 
     old_pvcs = set[str]()

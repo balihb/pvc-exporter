@@ -44,7 +44,7 @@ class TstKubeClientImpl(KubeClient):
         ))
 
 
-class TestPVC(unittest.TestCase):
+class TestMainLoop(unittest.TestCase):
 
     def setUp(self) -> None:
         self.test_env_1 = TstEnv(

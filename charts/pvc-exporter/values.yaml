@@ -169,5 +169,7 @@ serviceAccount:
 
 defaultDashboard:
   enabled: false
+  uid: 7YOYYp-Mz
+  title: 'PVC Usage'
   labels: {}
   annotations: {}

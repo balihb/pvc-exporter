@@ -8,11 +8,11 @@ metadata:
     app: {{ $fullName }}
     com: {{ $fullName }}-block-pvc-scanner
     {{- with .Values.BlockPvcScanner.daemonSet.labels }}
-  {{- toYaml . | nindent 6 }}
+  {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- with .Values.BlockPvcScanner.daemonSet.annotations }}
   annotations:
-  {{- toYaml . | nindent 6 }}
+  {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
   selector:

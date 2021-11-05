@@ -25,4 +25,4 @@ spec:
       path: /
       port: metrics
   jobLabel: app
-  {{- end}}
+  {{- end }}

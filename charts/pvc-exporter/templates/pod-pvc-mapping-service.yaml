@@ -1,5 +1,5 @@
 {{- $fullName := include "pvc-exporter.fullname" . -}}
-  {{- if .Values.PodPvcMapping.service.enabled }}
+  {{- if .Values.PodPvcMapping.service.enabled -}}
 apiVersion: v1
 kind: Service
 metadata:
@@ -29,4 +29,4 @@ spec:
   {{- else }}
   type: {{.Values.PodPvcMapping.service.type }}
   {{- end }}
-  {{- end}}
+  {{- end }}

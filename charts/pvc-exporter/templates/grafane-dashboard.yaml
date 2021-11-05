@@ -264,7 +264,7 @@ data:
               "exemplar": true,
               "expr": "label_join((sum without (pod,service,namespace,job,instance,endpoint) (pvc_usage)) + on(volumename) group_left(persistentvolumeclaim,mountedby,ns)pvc_mapping*0,\"pod_pvc\",\" : \",\"ns\",\"mountedby\",\"persistentvolumeclaim\")",
               "interval": "",
-              "legendFormat": "{{"{{"}}pod_pvc{{"}}"}}",
+              "legendFormat": "{{`{{ pod_pvc }}`}}",
               "refId": "A"
             }
           ],
@@ -338,8 +338,8 @@ data:
         ]
       },
       "timezone": "",
-      "title": "pvc_usage",
-      "uid": "7YOYYp-Mz",
+      "title": "{{ .Values.defaultDashboard.title }}",
+      "uid": "{{ .Values.defaultDashboard.uid }}",
       "version": 1
     }
     {{- end }}
