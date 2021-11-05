@@ -230,7 +230,7 @@ jobs:
           python-version: '3.9'
       - uses: azure/setup-helm@v1
         with:
-          version: v3.7.0
+          version: v3.7.1
 
       - name: Set up chart-testing
         uses: helm/chart-testing-action@v2.1.0

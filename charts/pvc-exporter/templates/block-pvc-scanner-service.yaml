@@ -1,0 +1,32 @@
+{{- $fullName := include "pvc-exporter.fullname" . -}}
+  {{- if .Values.BlockPvcScanner.service.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: {{ $fullName }}
+    version: {{ .Chart.AppVersion }}
+    {{- with .Values.BlockPvcScanner.service.labels }}
+    {{ toYaml . | indent 4 }}
+  {{- end }}
+  {{- with .Values.BlockPvcScanner.service.annotations }}
+  annotations:
+  {{ toYaml . | indent 4 }}
+  {{- end }}
+  name: {{ $fullName }}
+  namespace: {{.Release.Namespace}}
+spec:
+  ports:
+    - port: {{.Values.BlockPvcScanner.service.port}}
+      name: metrics
+      protocol: TCP
+      targetPort: {{.Values.BlockPvcScanner.containerPort}}
+  selector:
+    app: {{ $fullName }}
+    version: {{ .Chart.AppVersion }}
+  {{- if .Values.BlockPvcScanner.service.headless }}
+  clusterIP: None
+  {{- else }}
+  type: {{.Values.BlockPvcScanner.service.type }}
+  {{- end }}
+  {{- end }}

@@ -7,3 +7,5 @@ dist
 tests
 htmlcov
 **/*.egg-info
+xunit-reports
+coverage-reports

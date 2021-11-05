@@ -19,6 +19,7 @@ PodPvcMapping:
 
   containerPort: 8849
   service:
+    enabled: true
     headless: false
     ## If PodPvcMapping.service.headless=true, then ignore type
     type: NodePort
@@ -29,9 +30,9 @@ PodPvcMapping:
       # prometheus.io/port: "8849"
       # prometheus.io/scrape: "true"
 
-  env: []
+  env:
     # - name: APP_HTTP_SERVER_PORT
-    #   value: "8849"
+    #  value: "8849"
     # - name: APP_LOG_FORMAT
     #   value: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     # - name: APP_LOG_LEVEL
@@ -77,7 +78,7 @@ PodPvcMapping:
     annotations: {}
 
   serviceMonitor:
-    enabled: false
+    enabled: true
     labels: {}
     annotations: {}
 
@@ -91,6 +92,7 @@ BlockPvcScanner:
 
   containerPort: 8848
   service:
+    enabled: false
     headless: false
     ## If BlockPvcScanner.service.headless=true, then ignore type
     type: NodePort
@@ -103,7 +105,7 @@ BlockPvcScanner:
 
   env: []
     # - name: APP_HTTP_SERVER_PORT
-    #   value: "8849"
+    #  value: "8849"
     # - name: APP_LOG_FORMAT
     #   value: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     # - name: APP_LOG_LEVEL
@@ -144,7 +146,7 @@ BlockPvcScanner:
     annotations: {}
 
   podMonitor:
-    enabled: false
+    enabled: true
     labels: {}
     annotations: {}
 

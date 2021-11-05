@@ -8,11 +8,11 @@ metadata:
     app: {{ $fullName }}
     com: {{ $fullName }}-block-pvc-scanner
     {{- with .Values.BlockPvcScanner.daemonSet.labels }}
-  {{- toYaml . | nindent 4 }}
+  {{- toYaml . | nindent 6 }}
   {{- end }}
   {{- with .Values.BlockPvcScanner.daemonSet.annotations }}
   annotations:
-  {{- toYaml . | nindent 4 }}
+  {{- toYaml . | nindent 6 }}
   {{- end }}
 spec:
   selector:
@@ -40,7 +40,7 @@ spec:
       {{- end }}
       {{- with .Values.BlockPvcScanner.tolerations }}
       tolerations:
-      {{- toYaml . | nindent 6 }}
+      {{- toYaml . | nindent 8 }}
       {{- end }}
       containers:
         - name: block-pvc-scanner
@@ -52,6 +52,7 @@ spec:
             - containerPort: {{.Values.BlockPvcScanner.containerPort}}
               name: metrics
               protocol: TCP
+
           {{- with .Values.BlockPvcScanner.resources }}
           resources:
           {{- toYaml . | nindent 12 }}
@@ -73,7 +74,7 @@ spec:
           {{- end }}
           {{- with .Values.BlockPvcScanner.env }}
           env:
-      {{- toYaml . | nindent 10 }}
+      {{- toYaml . | nindent 12 }}
       {{- end }}
       volumes:
         - name: root-path

@@ -43,7 +43,7 @@ spec:
       {{- end }}
       {{- with .Values.PodPvcMapping.tolerations }}
       tolerations:
-      {{- toYaml . | nindent 6 }}
+      {{- toYaml . | nindent 8 }}
       {{- end }}
       containers:
         - name: pod-pvc-mapping
@@ -57,18 +57,18 @@ spec:
               protocol: TCP
           {{- with .Values.PodPvcMapping.env }}
           env:
-          {{- toYaml . | nindent 10 }}
+          {{- toYaml . | nindent 12 }}
           {{- end }}
           {{- with .Values.PodPvcMapping.resources }}
           resources:
-          {{- toYaml . | nindent 10 }}
+          {{- toYaml . | nindent 12 }}
           {{- end }}
           {{- with .Values.PodPvcMapping.livenessProbe }}
           livenessProbe:
-          {{- toYaml . | nindent 10 }}
+          {{- toYaml . | nindent 12 }}
           {{- end }}
           {{- with .Values.PodPvcMapping.securityContext }}
           securityContext:
-      {{- toYaml . | nindent 10 }}
+      {{- toYaml . | nindent 12 }}
       {{- end }}
       serviceAccountName: {{ $fullName }}-sa
