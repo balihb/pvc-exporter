@@ -7,7 +7,7 @@ metadata:
   labels:
     app: {{ $fullName }}
     com: {{ $fullName }}-pod-pvc-mapping
-    {{- with .Values.PodPvcMapping.deployment.labels }}
+  {{- with .Values.PodPvcMapping.deployment.labels }}
   {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- with .Values.PodPvcMapping.deployment.annotations }}
@@ -27,7 +27,7 @@ spec:
       labels:
         app: {{ $fullName }}
         com: {{ $fullName }}-pod-pvc-mapping
-        {{- with .Values.PodPvcMapping.pod.labels }}
+      {{- with .Values.PodPvcMapping.pod.labels }}
       {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- with .Values.PodPvcMapping.pod.annotations }}

@@ -6,8 +6,8 @@ metadata:
   labels:
     app: {{ $fullName }}
     version: {{ .Chart.AppVersion }}
-    {{- with .Values.BlockPvcScanner.service.labels }}
-    {{ toYaml . | indent 4 }}
+  {{- with .Values.BlockPvcScanner.service.labels }}
+  {{ toYaml . | indent 4 }}
   {{- end }}
   {{- with .Values.BlockPvcScanner.service.annotations }}
   annotations:

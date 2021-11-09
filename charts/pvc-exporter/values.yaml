@@ -26,17 +26,17 @@ PodPvcMapping:
     port: 8849
     labels: {}
     annotations: {}
-      # prometheus.io/path: "/"
-      # prometheus.io/port: "8849"
-      # prometheus.io/scrape: "true"
+    # prometheus.io/path: "/"
+    # prometheus.io/port: "8849"
+    # prometheus.io/scrape: "true"
 
   env:
-    # - name: APP_HTTP_SERVER_PORT
-    #  value: "8849"
-    # - name: APP_LOG_FORMAT
-    #   value: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    # - name: APP_LOG_LEVEL
-    #   value: "DEBUG"
+  # - name: APP_HTTP_SERVER_PORT
+  #  value: "8849"
+  # - name: APP_LOG_FORMAT
+  #   value: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  # - name: APP_LOG_LEVEL
+  #   value: "DEBUG"
 
   nodeSelector: {}
   tolerations:
@@ -101,17 +101,17 @@ BlockPvcScanner:
     port: 8848
     labels: {}
     annotations: {}
-      # prometheus.io/path: "/"
-      # prometheus.io/port: "8848"
-      # prometheus.io/scrape: "true"
+    # prometheus.io/path: "/"
+    # prometheus.io/port: "8848"
+    # prometheus.io/scrape: "true"
 
-  env: []
-    # - name: APP_HTTP_SERVER_PORT
-    #  value: "8849"
-    # - name: APP_LOG_FORMAT
-    #   value: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    # - name: APP_LOG_LEVEL
-    #   value: "DEBUG"
+  env: [ ]
+  # - name: APP_HTTP_SERVER_PORT
+  #  value: "8849"
+  # - name: APP_LOG_FORMAT
+  #   value: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  # - name: APP_LOG_LEVEL
+  #   value: "DEBUG"
 
   nodeSelector: {}
   tolerations:
