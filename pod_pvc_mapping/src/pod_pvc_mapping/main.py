@@ -1,34 +1,22 @@
-import logging
 import os
-from abc import ABC, abstractmethod
 from time import sleep
 from typing import NamedTuple, cast
 
-from kubernetes import client, config
-from kubernetes.client import CoreV1Api, V1PersistentVolumeClaimList, V1PersistentVolumeClaim, V1PodList, V1Pod, \
-    V1ObjectMeta, V1PodSpec, V1Volume, V1Namespace, V1NamespaceList, V1PersistentVolumeClaimSpec, \
+from kubernetes.client import V1PersistentVolumeClaim, V1Pod, \
+    V1ObjectMeta, V1PodSpec, V1Volume, V1Namespace, V1PersistentVolumeClaimSpec, \
     V1PersistentVolumeClaimVolumeSource
-from lazy import lazy
 from prometheus_client import start_http_server, Gauge
+
+from pod_pvc_mapping.kubeclinet import KubeClient, KubeClientImpl
+from .logger import logger
 
 
 class Volume(NamedTuple):
+    pvc: str
     vol: str
     ns: str
     pod: str
 
-
-class PodsPvcs(NamedTuple):
-    pods: list[V1Pod]
-    pvcs: list[V1PersistentVolumeClaim]
-
-
-formatter = logging.Formatter(os.getenv('APP_LOG_FORMAT', '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
-logger = logging.getLogger(__name__)
-logger.setLevel(os.getenv('APP_LOG_LEVEL', logging.INFO))
-print_log = logging.StreamHandler()
-print_log.setFormatter(formatter)
-logger.addHandler(print_log)
 
 gauge = Gauge(
     'pvc_mapping', 'fetching the mapping between pod and pvc',
@@ -38,10 +26,9 @@ gauge = Gauge(
 
 def process_pods(
     pods: list[V1Pod],
-    pool: dict[Volume, str],
     pvcs: list[V1PersistentVolumeClaim],
     ns: str,
-    new_pool_keys: set[Volume]
+    new_pool: set[Volume]
 ):
     for pod in pods:
         pod_name = cast(V1ObjectMeta, pod.metadata).name
@@ -67,15 +54,14 @@ def process_pods(
                     pvcs=pvcs,
                     pod_name=pod_name,
                     ns=ns,
-                    pool=pool,
-                    new_pool_keys=new_pool_keys
+                    new_pool=new_pool
                 )
         except TypeError:  # pragma: no cover
             pass
 
 
-def process_pvc(pvc_name: str, pvcs: list[V1PersistentVolumeClaim], pod_name: str, pool: dict[Volume, str], ns: str,
-                new_pool_keys: set[Volume]):
+def process_pvc(pvc_name: str, pvcs: list[V1PersistentVolumeClaim], pod_name: str, ns: str,
+                new_pool: set[Volume]):
     for pvc in pvcs:
         pvc_metadata_name = cast(V1ObjectMeta, pvc.metadata).name
         logger.debug(f"vol name: {pvc_metadata_name}")
@@ -83,70 +69,25 @@ def process_pvc(pvc_name: str, pvcs: list[V1PersistentVolumeClaim], pod_name: st
         if pvc_metadata_name == pvc_name:
             vol_name = cast(V1PersistentVolumeClaimSpec, pvc.spec).volume_name
             logger.info("NS: %s, POD: %s, VOLUME: %s, PVC: %s" % (ns, pod_name, vol_name, pvc_name))
-            vol = Volume(vol=vol_name, pod=pod_name, ns=ns)
-            new_pool_keys.add(vol)
-            if vol in pool.keys():
-                gauge.remove(pvc, vol.vol, vol.pod, vol.ns)
-            gauge.labels(pvc_name, vol.vol, vol.pod, vol.ns)
-            pool[vol] = pvc_name
+            vol = Volume(pvc=pvc_name, vol=vol_name, pod=pod_name, ns=ns)
+            # if vol in pool.keys():
+            #     gauge.remove(pvc, vol.vol, vol.pod, vol.ns)
+            if vol not in new_pool:
+                gauge.labels(vol.pvc, vol.vol, vol.pod, vol.ns)
+                new_pool.add(vol)
 
 
-def cleanup_pool(pool: dict[Volume, str], old_pool_keys: set[Volume], new_pool_keys: set[Volume]) -> set[Volume]:
-    for vol in old_pool_keys - new_pool_keys:
-        gauge.remove(pool[vol], vol.vol, vol.pod, vol.ns)
-        pool.pop(vol)
-    return set(pool.keys())
-
-
-class KubeClient(ABC):
-
-    @abstractmethod
-    def list_namespace(self) -> list[V1Namespace]:  # pragma: no cover
-        pass
-
-    @abstractmethod
-    def list_namespaced_pod(self, ns: str) -> list[V1Pod]:  # pragma: no cover
-        pass
-
-    @abstractmethod
-    def list_namespaced_persistent_volume_claim(self, ns: str) -> list[V1PersistentVolumeClaim]:  # pragma: no cover
-        pass
-
-    def get_single_namespace_data(self, ns: str) -> PodsPvcs:
-        logger.debug(f'ns: {ns}')
-        pods: list[V1Pod] = self.list_namespaced_pod(ns)
-        # logger.debug(pods)
-        pvcs: list[V1PersistentVolumeClaim] = self.list_namespaced_persistent_volume_claim(ns)
-        logger.debug('pvcs:')
-        logger.debug(list(
-            map(lambda v: (cast(V1ObjectMeta, v.metadata).name, cast(V1PersistentVolumeClaimSpec, v.spec).volume_name),
-                pvcs)))
-        return PodsPvcs(pods=pods, pvcs=pvcs)
-
-
-class KubeClientImpl(KubeClient):  # pragma: no cover
-
-    @lazy
-    def k8s_api_client(self) -> CoreV1Api:
-        config.load_incluster_config()
-        return client.CoreV1Api()
-
-    def list_namespace(self) -> list[V1Namespace]:
-        return cast(V1NamespaceList, self.k8s_api_client.list_namespace()).items
-
-    def list_namespaced_pod(self, ns: str) -> list[V1Pod]:
-        return cast(V1PodList, self.k8s_api_client.list_namespaced_pod(ns)).items
-
-    def list_namespaced_persistent_volume_claim(self, ns: str) -> list[V1PersistentVolumeClaim]:
-        return cast(V1PersistentVolumeClaimList, self.k8s_api_client.list_namespaced_persistent_volume_claim(ns)).items
+def cleanup_pool(old_pool: set[Volume], new_pool: set[Volume]) -> set[Volume]:
+    for vol in old_pool - new_pool:
+        gauge.remove(vol.pvc, vol.vol, vol.pod, vol.ns)
+    return new_pool
 
 
 def main_loop(
-    pool: dict[Volume, str],
-    old_pool_keys: set[Volume],
+    old_pool: set[Volume],
     kube_client: KubeClient = KubeClientImpl(),
 ) -> set[Volume]:
-    new_pool_keys: set[Volume] = set[Volume]()
+    new_pool: set[Volume] = set[Volume]()
 
     nss: list[V1Namespace] = kube_client.list_namespace()
     # logger.debug(nss)
@@ -154,25 +95,22 @@ def main_loop(
         ns: str = cast(V1ObjectMeta, i.metadata).name
         pods_pvcs = kube_client.get_single_namespace_data(ns)
         if len(pods_pvcs.pvcs) != 0 and len(pods_pvcs.pods) != 0:
-            process_pods(pods_pvcs.pods, pool, pods_pvcs.pvcs, ns, new_pool_keys)
+            process_pods(pods_pvcs.pods, pods_pvcs.pvcs, ns, new_pool)
 
-    return cleanup_pool(pool=pool, old_pool_keys=old_pool_keys, new_pool_keys=new_pool_keys)
+    return cleanup_pool(old_pool=old_pool, new_pool=new_pool)
 
 
 def main(argv: list[str] = None, kube_client: KubeClient = KubeClientImpl()):  # pragma: no cover
-    pool: dict[Volume, str] = {}
-
-    old_pool_keys: set[Volume] = set[Volume]()
+    old_pool: set[Volume] = set[Volume]()
 
     start_http_server(os.getenv('APP_HTTP_SERVER_PORT', 8849))
 
     while 1:
-        old_pool_keys = main_loop(
-            pool=pool,
-            old_pool_keys=old_pool_keys,
+        old_pool = main_loop(
+            old_pool=old_pool,
             kube_client=kube_client
         )
 
-        logger.info(f'PVCs found: {len(pool)}')
+        logger.info(f'PVCs found: {len(old_pool)}')
 
         sleep(15)

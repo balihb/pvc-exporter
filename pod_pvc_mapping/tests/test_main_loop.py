@@ -1,102 +1,148 @@
 import unittest
-from typing import NamedTuple, cast
-
-from kubernetes.client import V1PersistentVolumeClaim, V1Pod, V1Namespace, V1ObjectMeta, V1PodSpec, V1Volume, \
-    V1PersistentVolumeClaimVolumeSource, V1PersistentVolumeClaimSpec, V1Container
 
 from pod_pvc_mapping import main as ppm
-from pod_pvc_mapping.main import KubeClient
 from pod_pvc_mapping.main import Volume
-
-
-class TstEnv(NamedTuple):
-    nss: list[V1Namespace]
-    pods: list[V1Pod]
-    pvcs: list[V1PersistentVolumeClaim]
-
-
-class TstKubeClientImpl(KubeClient):
-    nss: list[V1Namespace]
-    pods: list[V1Pod]
-    pvcs: list[V1PersistentVolumeClaim]
-
-    def __init__(
-        self,
-        test_env: TstEnv
-    ):
-        self.nss = test_env.nss
-        self.pods = test_env.pods
-        self.pvcs = test_env.pvcs
-
-    def list_namespace(self) -> list[V1Namespace]:
-        return self.nss
-
-    def list_namespaced_pod(self, ns: str) -> list[V1Pod]:
-        return list(filter(
-            lambda pod: cast(V1ObjectMeta, pod.metadata).namespace == ns,
-            self.pods
-        ))
-
-    def list_namespaced_persistent_volume_claim(self, ns: str) -> list[V1PersistentVolumeClaim]:
-        return list(filter(
-            lambda pvc: cast(V1ObjectMeta, pvc.metadata).namespace == ns,
-            self.pvcs
-        ))
+from pod_pvc_mapping.main import gauge
+from .data import just_one, empty_env, different_namespace, two_vol_same_ns, two_vol_same_ns_vol_removed
 
 
 class TestMainLoop(unittest.TestCase):
-
     def setUp(self) -> None:
-        self.test_env_1 = TstEnv(
-            nss=[
-                V1Namespace(
-                    metadata=V1ObjectMeta(
-                        name='tst_ns_1'
-                    )
-                )
-            ],
-            pods=[
-                V1Pod(
-                    metadata=V1ObjectMeta(
-                        name='tst_pod_1',
-                        namespace='tst_ns_1'
-                    ),
-                    spec=V1PodSpec(
-                        containers=[
-                            V1Container(
-                                name='tst_pod_1_cnt'
-                            )
-                        ],
-                        volumes=[
-                            V1Volume(
-                                name='tst_vol',
-                                persistent_volume_claim=V1PersistentVolumeClaimVolumeSource(
-                                    claim_name='tst_claim_1'
-                                )
-                            )
-                        ]
-                    )
-                )
-            ],
-            pvcs=[
-                V1PersistentVolumeClaim(
-                    metadata=V1ObjectMeta(
-                        name='tst_claim_1',
-                        namespace='tst_ns_1'
-                    ),
-                    spec=V1PersistentVolumeClaimSpec(
-                        volume_name='pvc-2f0c4198-821b-4629-ab8f-59a993e3cd00'
-                    )
-                )
-            ]
-        )
-        self.tst_kube_client_1 = TstKubeClientImpl(
-            test_env=self.test_env_1
-        )
+        gauge.clear()
 
-    def test_env_1_start(self):
-        assert ppm.main_loop(
-            old_pool_keys=set[Volume](),
-            pool={},
-            kube_client=self.tst_kube_client_1
+    def tearDown(self) -> None:
+        gauge.clear()
+
+    def test_just_once(self):
+        ppm.main_loop(
+            old_pool=set[Volume](),
+            kube_client=just_one
         )
+        gc = gauge.collect()
+        assert len(gc[0].samples) == 1 and gc[0].samples[0].labels == {
+            'persistentvolumeclaim': 'tst_claim_1',
+            'volumename': 'pvc-2f0c4198-821b-4629-ab8f-59a993e3cd00',
+            'mountedby': 'tst_pod_1',
+            'ns': 'tst_ns_1'
+        }
+
+    def test_twice(self):
+        old_pool = set[Volume]()
+        old_pool = ppm.main_loop(
+            old_pool=old_pool,
+            kube_client=just_one
+        )
+        ppm.main_loop(
+            old_pool=old_pool,
+            kube_client=just_one
+        )
+        gc = gauge.collect()
+        assert len(gc[0].samples) == 1 and gc[0].samples[0].labels == {
+            'persistentvolumeclaim': 'tst_claim_1',
+            'volumename': 'pvc-2f0c4198-821b-4629-ab8f-59a993e3cd00',
+            'mountedby': 'tst_pod_1',
+            'ns': 'tst_ns_1'
+        }
+
+    def test_three_times(self):
+        old_pool = set[Volume]()
+        old_pool = ppm.main_loop(
+            old_pool=old_pool,
+            kube_client=just_one
+        )
+        old_pool = ppm.main_loop(
+            old_pool=old_pool,
+            kube_client=just_one
+        )
+        ppm.main_loop(
+            old_pool=old_pool,
+            kube_client=just_one
+        )
+        gc = gauge.collect()
+        assert len(gc[0].samples) == 1 and gc[0].samples[0].labels == {
+            'persistentvolumeclaim': 'tst_claim_1',
+            'volumename': 'pvc-2f0c4198-821b-4629-ab8f-59a993e3cd00',
+            'mountedby': 'tst_pod_1',
+            'ns': 'tst_ns_1'
+        }
+
+    def test_empty(self):
+        ppm.main_loop(
+            old_pool=set[Volume](),
+            kube_client=empty_env
+        )
+        gc = gauge.collect()
+        assert len(gc[0].samples) == 0
+
+    def test_different_namespace(self):
+        ppm.main_loop(
+            old_pool=set[Volume](),
+            kube_client=different_namespace
+        )
+        gc = gauge.collect()
+        assert \
+            len(gc[0].samples) == 2 and gc[0].samples[0].labels == {
+                'persistentvolumeclaim': 'tst_claim_1',
+                'volumename': 'pvc-9f2c31f4-e31c-459f-bdb4-08b0ba086644',
+                'mountedby': 'tst_pod_1',
+                'ns': 'tst_ns_1'
+            } and gc[0].samples[1].labels == {
+                'persistentvolumeclaim': 'tst_claim_1',
+                'volumename': 'pvc-40416cb8-37fb-4c27-ad06-e4f1d851b740',
+                'mountedby': 'tst_pod_1',
+                'ns': 'tst_ns_2'
+            }
+
+    def test_different_namespace_twice(self):
+        old_pool = set[Volume]()
+        old_pool = ppm.main_loop(
+            old_pool=old_pool,
+            kube_client=different_namespace
+        )
+        ppm.main_loop(
+            old_pool=old_pool,
+            kube_client=different_namespace
+        )
+        gc = gauge.collect()
+        assert \
+            len(gc[0].samples) == 2 and gc[0].samples[0].labels == {
+                'persistentvolumeclaim': 'tst_claim_1',
+                'volumename': 'pvc-9f2c31f4-e31c-459f-bdb4-08b0ba086644',
+                'mountedby': 'tst_pod_1',
+                'ns': 'tst_ns_1'
+            } and gc[0].samples[1].labels == {
+                'persistentvolumeclaim': 'tst_claim_1',
+                'volumename': 'pvc-40416cb8-37fb-4c27-ad06-e4f1d851b740',
+                'mountedby': 'tst_pod_1',
+                'ns': 'tst_ns_2'
+            }
+
+    def test_volume_remove(self):
+        old_pool = set[Volume]()
+        old_pool = ppm.main_loop(
+            old_pool=old_pool,
+            kube_client=two_vol_same_ns
+        )
+        gc_pre_remove = gauge.collect()
+        ppm.main_loop(
+            old_pool=old_pool,
+            kube_client=two_vol_same_ns_vol_removed
+        )
+        gc_post_remove = gauge.collect()
+        assert \
+            len(gc_pre_remove[0].samples) == 2 and gc_pre_remove[0].samples[0].labels == {
+                'persistentvolumeclaim': 'tst_claim_1',
+                'volumename': 'pvc-9f2c31f4-e31c-459f-bdb4-08b0ba086644',
+                'mountedby': 'tst_pod_1',
+                'ns': 'tst_ns_1'
+            } and gc_pre_remove[0].samples[1].labels == {
+                'persistentvolumeclaim': 'tst_claim_2',
+                'volumename': 'pvc-40416cb8-37fb-4c27-ad06-e4f1d851b740',
+                'mountedby': 'tst_pod_1',
+                'ns': 'tst_ns_1'
+            } and len(gc_post_remove[0].samples) == 1 and gc_post_remove[0].samples[0].labels == {
+                'persistentvolumeclaim': 'tst_claim_1',
+                'volumename': 'pvc-9f2c31f4-e31c-459f-bdb4-08b0ba086644',
+                'mountedby': 'tst_pod_1',
+                'ns': 'tst_ns_1'
+            }
