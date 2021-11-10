@@ -105,7 +105,7 @@ BlockPvcScanner:
     # prometheus.io/port: "8848"
     # prometheus.io/scrape: "true"
 
-  env: [ ]
+  env: []
   # - name: APP_HTTP_SERVER_PORT
   #  value: "8849"
   # - name: APP_LOG_FORMAT
