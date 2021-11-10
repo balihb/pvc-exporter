@@ -83,13 +83,12 @@ def update_stats(pvcs_disk_usage: dict[str, sdiskusage]):
         free_bytes_gauge.labels(pvc).set(disk_usage.free)
 
 
-def clean_removed_pvcs(old_pvcs: set[str], pvcs: set[str]) -> set[str]:
+def clean_removed_pvcs(old_pvcs: set[str], pvcs: set[str]):
     for pvc in old_pvcs - pvcs:
         percent_gauge.remove(pvc)
         total_bytes_gauge.remove(pvc)
         used_bytes_gauge.remove(pvc)
         free_bytes_gauge.remove(pvc)
-    return pvcs
 
 
 def process_mount_points(
@@ -104,9 +103,9 @@ def main_loop(
     get_partitions: Callable[[], set[str]] = get_all_partitions_proc_mounts,
     get_usage: Callable[[str], sdiskusage] = mount_point_to_disk_usage,
 ):
-    partitions: set[str] = \
-        get_partitions()
+    partitions: set[str] = get_partitions()
     mount_points: set[str] = get_relevant_mount_points(partitions)
+    pvcs: set[str] = set[str]()
     if len(mount_points) == 0:
         logger.info("No mounted PVC found.")
     else:
@@ -115,9 +114,10 @@ def main_loop(
                 mount_points=mount_points,
                 get_usage=get_usage
             )
-
         update_stats(pvcs_disk_usage)
-        return clean_removed_pvcs(old_pvcs, set(pvcs_disk_usage.keys()))
+        pvcs: set[str] = set[str](pvcs_disk_usage.keys())
+    clean_removed_pvcs(old_pvcs, pvcs)
+    return pvcs
 
 
 def main(
