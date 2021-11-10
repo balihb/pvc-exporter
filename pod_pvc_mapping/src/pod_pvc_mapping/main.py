@@ -70,8 +70,6 @@ def process_pvc(pvc_name: str, pvcs: list[V1PersistentVolumeClaim], pod_name: st
             vol_name = cast(V1PersistentVolumeClaimSpec, pvc.spec).volume_name
             logger.info("NS: %s, POD: %s, VOLUME: %s, PVC: %s" % (ns, pod_name, vol_name, pvc_name))
             vol = Volume(pvc=pvc_name, vol=vol_name, pod=pod_name, ns=ns)
-            # if vol in pool.keys():
-            #     gauge.remove(pvc, vol.vol, vol.pod, vol.ns)
             if vol not in new_pool:
                 gauge.labels(vol.pvc, vol.vol, vol.pod, vol.ns)
                 new_pool.add(vol)
