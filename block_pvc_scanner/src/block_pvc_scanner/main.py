@@ -1,4 +1,3 @@
-import logging
 import os
 import re
 import time
@@ -8,12 +7,7 @@ import psutil
 from prometheus_client import start_http_server, Gauge
 from psutil._common import sdiskusage
 
-formatter = logging.Formatter(os.getenv('APP_LOG_FORMAT', '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
-logger = logging.getLogger(__name__)
-logger.setLevel(os.getenv('APP_LOG_LEVEL', logging.INFO))
-print_log = logging.StreamHandler()
-print_log.setFormatter(formatter)
-logger.addHandler(print_log)
+from .logger import logger
 
 psutil.PROCFS_PATH = '/host/proc'
 
@@ -33,9 +27,7 @@ gke_data_re = re.compile('^gke-data')
 
 
 def filter_supported_pvcs(mount_point: str) -> bool:
-    if supported_pvc_re.match(mount_point):
-        return True
-    return False
+    return supported_pvc_re.fullmatch(mount_point) is not None
 
 
 def get_relevant_mount_points(partitions: set[str]) -> set[str]:
@@ -45,9 +37,9 @@ def get_relevant_mount_points(partitions: set[str]) -> set[str]:
 def mount_point_to_pvc(mount_point: str) -> str:
     mount_point_parts = mount_point.split('/')
     pvc = mount_point_parts[-1]
-    if not pvc_re.match(pvc):
+    if pvc_re.fullmatch(pvc) is None:
         for possible_pvc in mount_point_parts:
-            if pvc_re.match(possible_pvc):
+            if pvc_re.fullmatch(possible_pvc) is not None:
                 pvc = possible_pvc
             elif gke_data_re.match(possible_pvc):
                 pvc = 'pvc' + possible_pvc.split('pvc')[-1]

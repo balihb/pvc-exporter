@@ -75,10 +75,9 @@ def process_pvc(pvc_name: str, pvcs: list[V1PersistentVolumeClaim], pod_name: st
                 new_pool.add(vol)
 
 
-def cleanup_pool(old_pool: set[Volume], new_pool: set[Volume]) -> set[Volume]:
+def cleanup_pool(old_pool: set[Volume], new_pool: set[Volume]):
     for vol in old_pool - new_pool:
         gauge.remove(vol.pvc, vol.vol, vol.pod, vol.ns)
-    return new_pool
 
 
 def main_loop(
@@ -95,7 +94,8 @@ def main_loop(
         if len(pods_pvcs.pvcs) != 0 and len(pods_pvcs.pods) != 0:
             process_pods(pods_pvcs.pods, pods_pvcs.pvcs, ns, new_pool)
 
-    return cleanup_pool(old_pool=old_pool, new_pool=new_pool)
+    cleanup_pool(old_pool=old_pool, new_pool=new_pool)
+    return new_pool
 
 
 def main(argv: list[str] = None, kube_client: KubeClient = KubeClientImpl()):  # pragma: no cover
