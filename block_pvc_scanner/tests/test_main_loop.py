@@ -23,8 +23,22 @@ class TestMainLoop(unittest.TestCase):
     def setUp(self) -> None:
         percent_gauge.clear()
 
-    def test_1(self):
+    def test_once(self):
         old_pvcs = set[str]()
+        old_pvcs = bps.main_loop(
+            old_pvcs=old_pvcs,
+            get_partitions=get_all_mount_points,
+            get_usage=mount_point_to_disk_usage
+        )
+        assert len(old_pvcs) == 3 and len(percent_gauge.collect()[0].samples) == 3
+
+    def test_twice(self):
+        old_pvcs = set[str]()
+        old_pvcs = bps.main_loop(
+            old_pvcs=old_pvcs,
+            get_partitions=get_all_mount_points,
+            get_usage=mount_point_to_disk_usage
+        )
         old_pvcs = bps.main_loop(
             old_pvcs=old_pvcs,
             get_partitions=get_all_mount_points,

@@ -172,7 +172,7 @@ data:
               "exemplar": true,
               "expr": "label_join((sum without (pod,service,namespace,job,instance,endpoint) (pvc_usage_used_bytes)) + on(volumename) group_left(persistentvolumeclaim,mountedby,ns)pvc_mapping*0,\"pod_pvc\",\" : \",\"ns\",\"mountedby\",\"persistentvolumeclaim\")",
               "interval": "",
-              "legendFormat": "{{`{{ pod_pvc{ }}`}}",
+              "legendFormat": "{{`{{ pod_pvc }}`}}",
               "refId": "A"
             }
           ],
