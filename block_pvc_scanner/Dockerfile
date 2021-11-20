@@ -1,4 +1,4 @@
-ARG base_image_version=3.9.7-alpine3.14
+ARG base_image_version=3.9.9-alpine3.14
 FROM python:${base_image_version} as builder
 
 RUN apk add --no-cache gcc libc-dev linux-headers && rm -rf "/var/cache/apk/*"
