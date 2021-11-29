@@ -117,7 +117,7 @@ data:
           "targets": [
             {
               "exemplar": true,
-              "expr": "label_join(predict_linear(((sum without (pod,service,namespace,job,instance,endpoint) (pvc_usage)) + on(volumename) group_left(persistentvolumeclaim,mountedby,ns)pvc_mapping*0)[6h:],  24 * 60 * 60) ,\"pod_pvc\",\" : \",\"ns\",\"mountedby\",\"persistentvolumeclaim\")",
+              "expr": "label_join(predict_linear(((sum without (pod,service,namespace,job,instance,endpoint) (pvc_usage)) + on(volumename) group_left(persistentvolumeclaim,ns)pvc_mapping*0)[6h:],  24 * 60 * 60) ,\"pod_pvc\",\" : \",\"ns\",\"persistentvolumeclaim\")",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{`{{ pod_pvc }}`}}",
@@ -170,7 +170,7 @@ data:
           "targets": [
             {
               "exemplar": true,
-              "expr": "label_join((sum without (pod,service,namespace,job,instance,endpoint) (pvc_usage_used_bytes)) + on(volumename) group_left(persistentvolumeclaim,mountedby,ns)pvc_mapping*0,\"pod_pvc\",\" : \",\"ns\",\"mountedby\",\"persistentvolumeclaim\")",
+              "expr": "label_join((sum without (pod,service,namespace,job,instance,endpoint) (pvc_usage_used_bytes)) + on(volumename) group_left(persistentvolumeclaim,ns)pvc_mapping*0,\"pod_pvc\",\" : \",\"ns\",\"persistentvolumeclaim\")",
               "interval": "",
               "legendFormat": "{{`{{ pod_pvc }}`}}",
               "refId": "A"
@@ -262,7 +262,7 @@ data:
           "targets": [
             {
               "exemplar": true,
-              "expr": "label_join((sum without (pod,service,namespace,job,instance,endpoint) (pvc_usage)) + on(volumename) group_left(persistentvolumeclaim,mountedby,ns)pvc_mapping*0,\"pod_pvc\",\" : \",\"ns\",\"mountedby\",\"persistentvolumeclaim\")",
+              "expr": "label_join((sum without (pod,service,namespace,job,instance,endpoint) (pvc_usage)) + on(volumename) group_left(persistentvolumeclaim,ns)pvc_mapping*0,\"pod_pvc\",\" : \",\"ns\",\"persistentvolumeclaim\")",
               "interval": "",
               "legendFormat": "{{`{{ pod_pvc }}`}}",
               "refId": "A"
