@@ -163,7 +163,7 @@ jobs:
         uses: yuichielectric/dive-action@0.0.4
         with:
           image: ghcr.io/${{ github.repository_owner }}/block-pvc-scanner:${{ needs.version.outputs.semVer }}
-          config-file: ./.dive-ci.yml
+          config-file: ${{ github.workspace }}/.dive-ci.yml
       - name: Docker push block-pvc-scanner
         id: docker_push_block_pvc_scanner
         uses: docker/build-push-action@v2
@@ -244,7 +244,7 @@ jobs:
         uses: yuichielectric/dive-action@0.0.4
         with:
           image: ghcr.io/${{ github.repository_owner }}/pod-pvc-mapping:${{ needs.version.outputs.semVer }}
-          config-file: ./.dive-ci.yml
+          config-file: ${{ github.workspace }}/.dive-ci.yml
       - name: Docker push pod-pvc-mapping
         id: docker_push_pod_pvc_mapping
         uses: docker/build-push-action@v2
