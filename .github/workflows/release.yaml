@@ -164,6 +164,7 @@ jobs:
         with:
           image: ghcr.io/${{ github.repository_owner }}/block-pvc-scanner:${{ needs.version.outputs.semVer }}
           config-file: ${{ github.workspace }}/.dive-ci.yaml
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Docker push block-pvc-scanner
         id: docker_push_block_pvc_scanner
         uses: docker/build-push-action@v2
@@ -245,6 +246,7 @@ jobs:
         with:
           image: ghcr.io/${{ github.repository_owner }}/pod-pvc-mapping:${{ needs.version.outputs.semVer }}
           config-file: ${{ github.workspace }}/.dive-ci.yaml
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Docker push pod-pvc-mapping
         id: docker_push_pod_pvc_mapping
         uses: docker/build-push-action@v2
