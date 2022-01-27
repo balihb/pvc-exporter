@@ -1,3 +1,4 @@
+import argparse
 import os
 from time import sleep
 from typing import NamedTuple, cast
@@ -98,7 +99,7 @@ def main_loop(
     return new_pool
 
 
-def main(argv: list[str] = None, kube_client: KubeClient = KubeClientImpl()):  # pragma: no cover
+def main(argv: argparse.Namespace = None, kube_client: KubeClient = KubeClientImpl()):  # pragma: no cover
     old_pool: set[Volume] = set[Volume]()
 
     start_http_server(os.getenv('APP_HTTP_SERVER_PORT', 8849))

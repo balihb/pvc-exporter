@@ -1,4 +1,4 @@
-ARG base_image_version=3.9.9-alpine3.14
+ARG base_image_version=3.10.2-alpine3.15
 FROM python:${base_image_version} as builder
 
 # setup build venv

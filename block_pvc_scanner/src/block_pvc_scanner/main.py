@@ -1,3 +1,4 @@
+import argparse
 import os
 import re
 import time
@@ -113,7 +114,7 @@ def main_loop(
 
 
 def main(
-    argv: list[str] = None,
+    argv: argparse.Namespace = None,
     get_partitions: Callable[[], set[str]] = get_all_partitions_proc_mounts,
     get_usage: Callable[[str], sdiskusage] = mount_point_to_disk_usage
 ):  # pragma: no cover

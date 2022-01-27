@@ -1,5 +1,5 @@
-ARG base_image_version=3.9.9-alpine3.14
-FROM python:${base_image_version} as builder
+ARG base_image_tag=3.10.2-alpine3.15
+FROM python:${base_image_tag} as builder
 
 RUN apk add --no-cache gcc libc-dev linux-headers && rm -rf "/var/cache/apk/*"
 
@@ -33,7 +33,7 @@ WORKDIR /
 RUN python3 -m pip uninstall -y setuptools wheel pip
 
 # runtime image
-FROM python:${base_image_version}
+FROM python:${base_image_tag}
 
 # copy venv
 ENV VIRTUAL_ENV=/opt/venv

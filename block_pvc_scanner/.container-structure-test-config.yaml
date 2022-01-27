@@ -1,0 +1,6 @@
+schemaVersion: '2.0.0'
+commandTests:
+  - name: "block-pvc-scanner"
+    command: "block-pvc-scanner"
+    args: ["-h"]
+    expectedOutput: ["Block device PVC scanner."]

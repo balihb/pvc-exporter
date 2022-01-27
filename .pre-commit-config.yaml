@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.0.1
+    rev: v4.1.0
     hooks:
       - id: trailing-whitespace
       - id: check-merge-conflict
@@ -14,7 +14,6 @@ repos:
               charts/pvc-exporter/templates/.+.yaml
           )$
       - id: check-json
-      - id: check-xml
       - id: check-toml
   - repo: https://github.com/pycqa/flake8
     rev: '4.0.1'
@@ -26,7 +25,7 @@ repos:
       - id: helmlint
       # - id: yapf
   - repo: https://github.com/editorconfig-checker/editorconfig-checker.python
-    rev: '2.3.54'
+    rev: '2.4.0'
     hooks:
       - id: editorconfig-checker
         alias: ec
@@ -36,3 +35,11 @@ repos:
               COPYING|
               charts/pvc-exporter/templates/.+.yaml
           )$
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.8.0
+    hooks:
+      - id: hadolint
+  - repo: https://github.com/sirosen/check-jsonschema
+    rev: 0.8.2
+    hooks:
+      - id: check-github-workflows
